@@ -1,30 +1,33 @@
-# Build and deploy the library hub container
-trigger:
-- master
+trigger: none
+
+schedules:
+- cron: "*/5 * * * *"
+  displayName: Poll upstream
+  branches:
+    include: [master]
+  always: true
 
 pool:
   name: default
 
 steps:
-- bash: sudo docker build -t justindoesstuff .
-  displayName: 'Build Image'
-
-- bash: sudo docker rm -f justindoesstuff || true
-  displayName: 'Remove Old Container (if any)'
+- checkout: self
+  clean: true
+  persistCredentials: true
 
 - bash: |
-    sudo docker run -d \
-      --name justindoesstuff \
-      --network nginxmanager_default \
-      --restart unless-stopped \
-      -p 7998:80 \
-      libhub
-  displayName: 'Run Container'
-
-- bash: |
-    sleep 5
-    sudo docker inspect -f '{{.State.Running}}' libhub | grep -q true
-  displayName: 'Verify Container Is Running'
-
-- bash: sudo docker image prune -f
-  displayName: 'Clean Up Dangling Images'
+    set -e
+    upstream=$(git ls-remote https://github.com/badjac1/justindoesstuff.git refs/heads/main | cut -f1)
+    [ -n "$upstream" ] || { echo "ls-remote failed"; exit 1; }
+    last=$(cat last-sha.txt 2>/dev/null || true)
+    if [ "$upstream" = "$last" ]; then
+      echo "No change ($upstream)"
+      exit 0
+    fi
+    echo "$upstream" > last-sha.txt
+    git config user.email "pipeline@local"
+    git config user.name "poller"
+    git add last-sha.txt
+    git commit -m "Upstream moved to $upstream"
+    git push origin HEAD:master
+  displayName: Detect change and record SHA
