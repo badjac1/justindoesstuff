@@ -1,0 +1,30 @@
+# Build and deploy the library hub container
+trigger:
+- master
+
+pool:
+  name: default
+
+steps:
+- bash: sudo docker build -t justindoesstuff .
+  displayName: 'Build Image'
+
+- bash: sudo docker rm -f justindoesstuff || true
+  displayName: 'Remove Old Container (if any)'
+
+- bash: |
+    sudo docker run -d \
+      --name justindoesstuff \
+      --network nginxmanager_default \
+      --restart unless-stopped \
+      -p 7998:80 \
+      libhub
+  displayName: 'Run Container'
+
+- bash: |
+    sleep 5
+    sudo docker inspect -f '{{.State.Running}}' libhub | grep -q true
+  displayName: 'Verify Container Is Running'
+
+- bash: sudo docker image prune -f
+  displayName: 'Clean Up Dangling Images'
