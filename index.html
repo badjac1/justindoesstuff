@@ -262,7 +262,10 @@
   </div>
 
   <!-- INTERACTIVE SCRIPTS -->
+  <script src="https://unpkg.com/marked@12.0.2/marked.min.js"></script>
+  <script src="https://unpkg.com/dompurify@3.1.6/dist/purify.min.js"></script>
   <script src="photos.js"></script>
+  <script src="zines.js"></script>
   <script>
     // Icons are decoration: if the Lucide CDN fails to load, the rest of the page must still work.
     function safeIcons() {
@@ -271,89 +274,50 @@
     safeIcons();
 
     // ============================================================
-    // ZINE: one data list drives the shelf AND the reader.
-    // To add an issue, append an object to the END of this array
-    // (oldest first, newest last). Nothing else needs editing.
+    // ZINE: issues are discovered from the zines/ folder by zines.js.
+    // See the instructions at the top of that file to add one.
     // ============================================================
-    const zineIssues = [
-      {
-        vol: '01',
-        title: 'Analog Photography Notes',
-        kicker: 'Photography',
-        date: '07/26',
-        dateLong: 'July 2026',
-        color: '#3b1f2d',
-        height: '21rem',
-        body: [
-          'Notes on exposure, film grain choices, and capturing natural lighting in indoor session settings.'
-        ]
-      },
-      {
-        vol: '02',
-        title: 'Portland Field Observations',
-        kicker: 'Field Notes',
-        date: '08/26',
-        dateLong: 'August 2026',
-        color: '#1f2d3d',
-        height: '22.5rem',
-        body: [
-          'Exploring neighborhoods across Portland on foot with a camera in hand opens up new ways of observing local architecture, coffee spots, and urban textures.'
-        ]
-      },
-      {
-        vol: '03',
-        title: 'Skeuomorphism & Tactile Web',
-        kicker: 'Digital Craft',
-        date: '09/26',
-        dateLong: 'September 2026',
-        color: '#3d2b1f',
-        height: '21.5rem',
-        body: [
-          'For over a decade, web design flattened into uniform, minimalist white boxes. While efficient, it stripped personal homepages of character.',
-          'Designing digital spaces that mimic physical objects—wooden shelves, brass labels, parchment cards—gives visitors an immediate sense of place and personal hospitality.'
-        ]
-      },
-      {
-        vol: '04',
-        title: 'Resonance, Reeds, and Timber',
-        kicker: 'Sound & Wood',
-        date: '10/26',
-        dateLong: 'October 2026',
-        color: '#2d3728',
-        height: '23rem',
-        body: [
-          'Playing a tenor banjo in traditional sessions is an exercise in acoustic balancing. The skin head tension, bridge timber density, and pick attack shape how the instrument cuts through accordion and fiddle tones.',
-          'When shifting between acoustic sessions and home digital recordings, maintaining that warm physical timbre requires mic placement strategy over artificial EQ pushing.'
-        ]
-      }
-    ];
+    let zineIssues = [];
 
     let currentZine = -1;
     let zineOpener = null; // element to return focus to on close
 
-    function renderZineShelf() {
+    async function renderZineShelf() {
       const rack = document.getElementById('zine-spines');
+      const msg = (t) => `<p class="font-mono text-xs text-amber-200/70 uppercase tracking-widest pb-10">${t}</p>`;
+      rack.innerHTML = msg('Dusting off the shelf…');
+      try {
+        zineIssues = await loadZines();
+      } catch (err) {
+        console.error('Could not load zines', err);
+        rack.innerHTML = msg('The journal could not be loaded right now.');
+        return;
+      }
+      if (!zineIssues.length) {
+        rack.innerHTML = msg('No issues on the shelf yet.');
+        return;
+      }
       const latest = zineIssues.length - 1;
 
       rack.innerHTML = zineIssues.map((issue, i) => `
         <div role="listitem" class="flex-shrink-0">
           <button type="button" onclick="openZine(${i}, this)"
-                  aria-label="Open Vol ${issue.vol}: ${issue.title}, ${issue.dateLong}"
+                  aria-label="Open Vol ${esc(issue.vol)}: ${esc(issue.title)}, ${esc(issue.dateLong)}"
                   class="zine-spine cursor-pointer w-14 md:w-16 border-r-2 border-stone-950 rounded-t-sm px-1.5 pt-2 pb-2 flex flex-col items-center text-amber-100"
-                  style="height:${issue.height}; background-color:${issue.color}">
+                  style="height:${esc(issue.height)}; background-color:${esc(issue.color)}">
             ${i === latest ? '<span class="zine-ribbon" title="Newest issue"></span>' : ''}
             <div class="text-center w-full">
               <span class="font-mono text-[10px] font-extrabold text-amber-300 block leading-none">VOL</span>
-              <span class="font-mono text-sm font-bold text-amber-100 block leading-tight">${issue.vol}</span>
+              <span class="font-mono text-sm font-bold text-amber-100 block leading-tight">${esc(issue.vol)}</span>
             </div>
             <div class="spine-band mt-1.5"></div>
 
             <div class="flex-1 min-h-0 w-full flex items-center justify-center py-2">
-              <h3 class="vertical-title font-display font-bold text-[13px] md:text-sm text-amber-100 tracking-wide">${issue.title}</h3>
+              <h3 class="vertical-title font-display font-bold text-[13px] md:text-sm text-amber-100 tracking-wide">${esc(issue.title)}</h3>
             </div>
 
             <div class="spine-band mb-1.5"></div>
-            <span class="font-mono text-[10px] text-amber-300/90 font-bold block uppercase">${issue.date}</span>
+            <span class="font-mono text-[10px] text-amber-300/90 font-bold block uppercase">${esc(issue.date)}</span>
           </button>
         </div>
       `).join('');
@@ -371,9 +335,7 @@
       document.getElementById('zine-modal-title').textContent = issue.title;
 
       const body = document.getElementById('zine-modal-body');
-      body.innerHTML = issue.body
-        .map((p, i) => `<p class="${i === 0 ? 'zine-dropcap' : ''}">${p}</p>`)
-        .join('');
+      body.innerHTML = issue.html; // sanitized in zines.js
       body.scrollTop = 0;
       // restart the page-turn animation
       body.classList.remove('zine-page-in');
@@ -399,6 +361,7 @@
     }
 
     function openLatestZine() {
+      if (!zineIssues.length) return;
       openZine(zineIssues.length - 1, document.activeElement);
     }
 
