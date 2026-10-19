@@ -7,7 +7,6 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 # Anything that shouldn't be public is excluded in .dockerignore.
 COPY . /usr/share/nginx/html/
 
-# The unprivileged image runs as non-root, so it listens on 8080.
 EXPOSE 8080
 
 HEALTHCHECK --interval=30s --timeout=3s --retries=3 \
