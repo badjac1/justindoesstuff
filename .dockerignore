@@ -3,6 +3,5 @@
 .gitignore
 .dockerignore
 Dockerfile
-nginx.conf
 README*
 *.md
