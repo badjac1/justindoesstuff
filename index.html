@@ -428,10 +428,27 @@
     // PORTFOLIO SHELF: reads PORTFOLIOS from photos.js.
     // Each case links to portfolio.html?p=<id>.
     // ============================================================
-    function renderPortfolioShelf() {
+    async function renderPortfolioShelf() {
       const shelf = document.getElementById('portfolio-shelf');
+      shelf.innerHTML = '<p class="font-mono text-xs text-amber-200/70 uppercase tracking-widest pb-10">Dusting off the shelf…</p>';
+      let PORTFOLIOS;
+      try {
+        PORTFOLIOS = await loadPortfolios();
+      } catch (err) {
+        console.error('Could not load portfolios', err);
+        shelf.innerHTML = '<p class="font-mono text-xs text-amber-200/70 uppercase tracking-widest pb-10">The portfolios could not be loaded right now.</p>';
+        return;
+      }
+      if (!PORTFOLIOS.length) {
+        shelf.innerHTML = '<p class="font-mono text-xs text-amber-200/70 uppercase tracking-widest pb-10">No portfolios on the shelf yet.</p>';
+        return;
+      }
       shelf.innerHTML = PORTFOLIOS.map((p) => {
         const count = p.photos.length + (p.photos.length === 1 ? ' print' : ' prints');
+        const cover = coverOf(p);
+        const coverHtml = cover
+          ? `<img src="${esc(thumbUrl(p, cover))}" alt="" loading="lazy" class="w-full h-full object-cover">`
+          : `<div class="w-full h-full bg-stone-300 flex items-center justify-center font-mono text-[10px] text-stone-600 uppercase tracking-widest">Coming soon</div>`;
         return `
           <div role="listitem" class="flex-shrink-0">
             <a href="portfolio.html?p=${encodeURIComponent(p.id)}"
@@ -439,7 +456,7 @@
                class="portfolio relative block w-52 md:w-56 text-left cursor-pointer"
                style="--leather:${p.color}; --tilt:${p.tilt}">
               <div class="portfolio-print absolute left-5 right-5 -top-12 h-40 bg-stone-100 p-2 rounded-sm">
-                <img src="${esc(photoUrl(p, coverOf(p)))}" alt="" loading="lazy" class="w-full h-full object-cover">
+                ${coverHtml}
               </div>
               <div class="portfolio-case relative z-10 h-64 rounded-md">
                 <div class="absolute inset-2 border-2 border-dashed border-amber-200/25 rounded pointer-events-none"></div>
@@ -447,7 +464,7 @@
                 <div class="absolute inset-x-0 top-1/2 -translate-y-1/2 flex flex-col items-center gap-2.5 px-6">
                   <div class="brass-plate rounded px-3 py-2 text-center w-full">
                     <div class="font-display font-black text-sm text-amber-950 uppercase tracking-widest">${esc(p.title)}</div>
-                    <div class="font-mono text-[10px] font-bold text-amber-900 uppercase leading-tight mt-0.5">${esc(p.blurb)}</div>
+                    ${p.blurb ? `<div class="font-mono text-[10px] font-bold text-amber-900 uppercase leading-tight mt-0.5">${esc(p.blurb)}</div>` : ''}
                   </div>
                   <span class="font-mono text-[10px] text-amber-200/70 uppercase tracking-widest">${count}</span>
                 </div>
