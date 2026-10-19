@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Official Bureau of Ridiculous Complaints & Excuses</title>
+  <style>
+    :root {
+      --bg: #fdf6e3;
+      --card-bg: #ffffff;
+      --accent-1: #ff4757;
+      --accent-2: #2ed573;
+      --accent-3: #1e90ff;
+      --text: #2f3542;
+      --border: #2f3542;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Comic Sans MS', 'Chalkboard SE', 'Comic Neue', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      padding: 20px;
+      line-height: 1.6;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      border: 4px solid var(--border);
+      background-color: #ffeaa7;
+      padding: 20px;
+      box-shadow: 6px 6px 0px var(--border);
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      color: #d63031;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .subtitle {
+      font-size: 1.1rem;
+      font-weight: bold;
+      margin-top: 5px;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 25px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 3px solid var(--border);
+      padding: 20px;
+      box-shadow: 5px 5px 0px var(--border);
+    }
+
+    .card h2 {
+      border-bottom: 3px solid var(--border);
+      padding-bottom: 8px;
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Section 1: Excuses Table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      border: 2px solid var(--border);
+      padding: 10px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #74b9ff;
+      color: white;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f1f2f6;
+    }
+
+    /* Section 2: Important Notices */
+    .notice-list {
+      list-style-type: none;
+    }
+
+    .notice-list li {
+      padding: 10px;
+      margin-bottom: 10px;
+      border-left: 6px solid var(--accent-1);
+      background-color: #ffe0e0;
+    }
+
+    .notice-list li:nth-child(2) {
+      border-left-color: var(--accent-2);
+      background-color: #e0ffe8;
+    }
+
+    .notice-list li:nth-child(3) {
+      border-left-color: var(--accent-3);
+      background-color: #e0f0ff;
+    }
+
+    /* Section 3: Static Complaint Form */
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid var(--border);
+      font-family: inherit;
+      background-color: #fff;
+    }
+
+    .static-btn {
+      background-color: #ff6b6b;
+      color: white;
+      font-weight: bold;
+      font-size: 1.1rem;
+      border: 3px solid var(--border);
+      padding: 12px 20px;
+      cursor: not-allowed;
+      box-shadow: 3px 3px 0px var(--border);
+      width: 100%;
+      text-align: center;
+    }
+
+    .disclaimer {
+      font-size: 0.85rem;
+      color: #636e72;
+      font-style: italic;
+      margin-top: 8px;
+      text-align: center;
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      padding: 15px;
+      border-top: 2px dashed var(--border);
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Bureau of Absurd Excuses & Complaints</h1>
+    <p class="subtitle">Official Department of Unnecessary Explanations (Est. 1842)</p>
+  </header>
+
+  <div class="container">
+
+    <!-- Card 1: Emergency Excuse Directory -->
+    <div class="card">
+      <h2>📋 Emergency Excuse Directory</h2>
+      <p>Select an excuse from the pre-approved government chart below to get out of any commitment:</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Situation</th>
+            <th>Approved Excuse</th>
+            <th>Believability</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Late for Work</td>
+            <td>A stray cat made eye contact with me and I couldn't move for 45 minutes.</td>
+            <td>100%</td>
+          </tr>
+          <tr>
+            <td>Missed Deadline</td>
+            <td>My Wi-Fi developed a personal grudge against me.</td>
+            <td>94%</td>
+          </tr>
+          <tr>
+            <td>Skipping Social Event</td>
+            <td>I have to stay home and teach my potted fern classical music.</td>
+            <td>88%</td>
+          </tr>
+          <tr>
+            <td>Forgot Birthday</td>
+            <td>I was celebrating according to the ancient Babylonian calendar.</td>
+            <td>12%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Card 2: Mandatory Public Announcements -->
+    <div class="card">
+      <h2>📢 Mandatory Public Announcements</h2>
+      <ul class="notice-list">
+        <li>
+          <strong>NOTICE #402:</strong> Gravity will be operating at 85% capacity between 2:00 PM and 3:00 PM today for routine maintenance. Hold onto your hats.
+        </li>
+        <li>
+          <strong>NOTICE #709:</strong> All pigeons in the courtyard are federal employees. Do not hand them classified documents or breadcrumbs.
+        </li>
+        <li>
+          <strong>NOTICE #999:</strong> If you lose an argument on the internet, please submit Form B-12 to request a immediate retry.
+        </li>
+      </ul>
+    </div>
+
+    <!-- Card 3: Complaint Submission Box -->
+    <div class="card">
+      <h2>📥 Formal Complaint Filing (Non-Functional)</h2>
+      
+      <div class="form-group">
+        <label for="name">Your Name (or Fake Name):</label>
+        <input type="text" id="name" value="Lord Fluffington" readonly>
+      </div>
+
+      <div class="form-group">
+        <label for="category">Reason for Rage:</label>
+        <select id="category" disabled>
+          <option selected>Socks kept slipping inside my shoes</option>
+          <option>Someone breathed too loudly</option>
+          <option>The sun was slightly too shiny</option>
+          <option>My banjo tune wouldn't stay in tune</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="complaint">Detailed Grievance:</label>
+        <textarea id="complaint" rows="3" readonly>I demands an immediate refund for yesterday's weather. It was supposed to be partly cloudy, but it was mostly cloudy. Unacceptable.</textarea>
+      </div>
+
+      <div class="static-btn">SUBMIT COMPLAINT TO VOID</div>
+      <p class="disclaimer">* Note: This button is intentionally decorative. Submitting this form deposits your grievance directly into a virtual paper shredder.</p>
+    </div>
+
+  </div>
+
+  <footer>
+    <p>© 2026 Department of Absurdity. All rights reserved. No pigeons were harmed in the making of this page.</p>
+  </footer>
+
+</body>
+</html>
