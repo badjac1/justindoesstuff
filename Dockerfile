@@ -1,9 +1,12 @@
-FROM nginx:alpine
+FROM nginxinc/nginx-unprivileged:1.28-alpine
 
-# Serve the hub page as the site root
-COPY main.html /usr/share/nginx/html/index.html
+# Config: security headers, caching, tidy defaults
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-EXPOSE 80
+# Serve the whole site, so new pages, photos, JS and CSS work without touching this file
+COPY --chown=nginx:nginx . /usr/share/nginx/html/
+
+EXPOSE 8080
 
 HEALTHCHECK --interval=30s --timeout=3s --retries=3 \
-  CMD wget -qO- http://127.0.0.1/ >/dev/null || exit 1
+  CMD wget -qO- http://127.0.0.1:8080/ >/dev/null || exit 1
