@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Portfolio — Justindoesstuff.com</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Faustina:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <script src="tailwind-config.js"></script>
+  <link rel="stylesheet" href="site.css">
+
+  <style>
+    /* Mounted print on the portfolio page */
+    .print {
+      background: #f6f0e3;
+      box-shadow: 0 6px 14px rgba(0,0,0,0.65), 0 0 0 1px rgba(0,0,0,0.25);
+      transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.25s ease;
+      transform: rotate(var(--r, 0deg));
+    }
+    .print:hover, .print:focus-visible {
+      transform: translateY(-6px) rotate(0deg) scale(1.02);
+      box-shadow: 0 16px 28px rgba(0,0,0,0.85);
+      outline: none;
+      position: relative; z-index: 5;
+    }
+    .print:focus-visible { box-shadow: 0 0 0 3px #f5d77f, 0 16px 28px rgba(0,0,0,0.85); }
+    .print img { background: #2a1608; }
+    @media (prefers-reduced-motion: reduce) { .print { transition: none; } }
+  </style>
+</head>
+<body class="text-amber-950 font-body min-h-screen pb-16">
+
+  <!-- HEADER (same as home page) -->
+  <header class="sticky top-0 z-40 bg-[#311b0b] border-b-8 border-[#1a0d05] shadow-2xl py-4 px-4">
+    <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="brass-plate rounded px-6 py-2.5 text-center flex items-center gap-3 relative">
+        <div class="w-2.5 h-2.5 rounded-full bg-stone-800 border border-amber-200 shadow-inner"></div>
+        <a href="index.html" class="font-display font-black text-xl md:text-2xl text-amber-950 tracking-widest uppercase drop-shadow-[0_1px_1px_rgba(255,255,255,0.6)]">Justin Does Stuff</a>
+        <div class="w-2.5 h-2.5 rounded-full bg-stone-800 border border-amber-200 shadow-inner"></div>
+      </div>
+      <nav class="flex flex-wrap justify-center items-center gap-2 md:gap-3 text-xs md:text-sm font-display font-bold">
+        <a href="index.html#featured" class="book-spine bg-red-900 text-amber-100 border-l-4 border-red-700 px-3.5 py-2 rounded-r">Main Stage</a>
+        <a href="index.html#zine" class="book-spine bg-amber-900 text-amber-100 border-l-4 border-amber-700 px-3.5 py-2 rounded-r">Journal</a>
+        <a href="index.html#photography" class="book-spine bg-emerald-900 text-amber-100 border-l-4 border-emerald-700 px-3.5 py-2 rounded-r">Gallery</a>
+        <a href="index.html#contact" class="book-spine bg-stone-800 text-amber-100 border-l-4 border-stone-600 px-3.5 py-2 rounded-r">Mailbox</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 mt-8">
+    <section class="relative" aria-labelledby="pf-title">
+      <div class="absolute -top-4 left-8 z-10 brass-plate px-4 py-1 rounded text-xs font-display font-bold text-amber-950 uppercase flex items-center gap-2">
+        <div class="w-1.5 h-1.5 rounded-full bg-stone-900"></div>
+        Open Portfolio
+        <div class="w-1.5 h-1.5 rounded-full bg-stone-900"></div>
+      </div>
+
+      <div class="cubby-depth rounded-lg p-6 md:p-8 pt-10">
+
+        <!-- Title bar -->
+        <div class="flex flex-wrap items-end justify-between gap-4 mb-8 border-b border-amber-900/40 pb-5">
+          <div>
+            <h1 id="pf-title" class="font-display font-black text-3xl md:text-4xl text-amber-100 uppercase tracking-widest"></h1>
+            <p id="pf-blurb" class="font-mono text-xs text-amber-300/80 uppercase tracking-widest mt-1"></p>
+          </div>
+          <div class="flex items-center gap-4">
+            <span id="pf-count" class="font-mono text-xs text-amber-300/60 uppercase tracking-widest"></span>
+            <a href="index.html#photography" class="brass-plate px-4 py-2 rounded font-display text-xs font-bold text-amber-950 uppercase">← Back to shelf</a>
+          </div>
+        </div>
+
+        <!-- Photo grid: columns keep each photo's real proportions -->
+        <div id="pf-grid" class="columns-1 sm:columns-2 lg:columns-3 gap-6"></div>
+
+        <!-- Shown for an unknown / empty portfolio -->
+        <div id="pf-empty" class="hidden parchment-card rounded p-8 text-center">
+          <p class="font-display font-bold text-lg text-stone-900 mb-2" id="pf-empty-title">Nothing on this shelf yet.</p>
+          <p class="font-body text-stone-700 mb-4" id="pf-empty-text"></p>
+          <a href="index.html#photography" class="bg-amber-900 text-amber-100 font-display text-sm font-bold px-4 py-2 rounded inline-block">Back to the shelf</a>
+        </div>
+
+        <!-- Other portfolios -->
+        <div class="mt-10 pt-5 border-t border-amber-900/40 flex flex-wrap items-center gap-3">
+          <span class="font-mono text-xs text-amber-200/80 uppercase tracking-widest">More portfolios:</span>
+          <div id="pf-others" class="flex flex-wrap gap-2 font-display text-xs font-bold"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- LIGHTBOX -->
+  <div id="lb" class="fixed inset-0 z-50 bg-black/92 hidden backdrop-blur-sm flex items-center justify-center p-4" onclick="closeLb()">
+    <div id="lb-dialog" role="dialog" aria-modal="true" aria-labelledby="lb-title" tabindex="-1"
+         class="relative max-w-5xl w-full parchment-card rounded-lg p-4 md:p-6 border-4 border-amber-900 focus:outline-none"
+         onclick="event.stopPropagation()">
+      <button type="button" onclick="closeLb()" aria-label="Close photo"
+              class="absolute -top-3 -right-3 brass-plate w-8 h-8 rounded-full flex items-center justify-center text-amber-950 font-bold shadow-lg">✕</button>
+      <div class="bg-stone-900 rounded overflow-hidden flex items-center justify-center" style="max-height:72vh">
+        <img id="lb-img" src="" alt="" class="w-auto object-contain" style="max-height:72vh">
+      </div>
+      <div class="mt-4 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+        <div>
+          <h2 id="lb-title" class="font-display font-bold text-lg text-stone-900"></h2>
+          <p id="lb-note" class="font-mono text-xs text-amber-800"></p>
+        </div>
+        <div class="flex items-center gap-3 font-display text-xs font-bold">
+          <button id="lb-prev" type="button" onclick="stepLb(-1)" class="bg-stone-200 hover:bg-stone-300 disabled:opacity-30 disabled:cursor-not-allowed text-stone-900 border border-stone-400 px-3 py-2 rounded">← Prev</button>
+          <span id="lb-pos" class="font-mono text-[11px] text-amber-800 uppercase tracking-widest"></span>
+          <button id="lb-next" type="button" onclick="stepLb(1)" class="bg-amber-900 hover:bg-amber-800 disabled:opacity-30 disabled:cursor-not-allowed text-amber-100 px-3 py-2 rounded">Next →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="photos.js"></script>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const wanted = params.get('p');
+    const portfolio = PORTFOLIOS.find(p => p.id === wanted);
+
+    let cur = -1;      // index of photo open in the lightbox
+    let opener = null; // element to refocus on close
+
+    function showEmpty(title, text) {
+      document.getElementById('pf-empty').classList.remove('hidden');
+      document.getElementById('pf-empty-title').textContent = title;
+      document.getElementById('pf-empty-text').textContent = text;
+    }
+
+    function init() {
+      if (!portfolio) {
+        document.getElementById('pf-title').textContent = 'Portfolio not found';
+        showEmpty('That portfolio is not on the shelf.', 'Pick one from the shelf on the home page.');
+      } else {
+        document.title = portfolio.title + ' — Justindoesstuff.com';
+        document.getElementById('pf-title').textContent = portfolio.title;
+        document.getElementById('pf-blurb').textContent = portfolio.blurb;
+        const n = portfolio.photos.length;
+        document.getElementById('pf-count').textContent = n + (n === 1 ? ' print' : ' prints');
+
+        if (n === 0) {
+          showEmpty('Nothing in here yet.', 'New prints are on their way.');
+        } else {
+          const rot = ['-1.2deg', '0.9deg', '-0.6deg', '1.4deg', '-0.9deg', '0.5deg'];
+          document.getElementById('pf-grid').innerHTML = portfolio.photos.map((ph, i) => `
+            <div class="break-inside-avoid mb-6">
+              <button type="button" onclick="openLb(${i}, this)" aria-label="View ${esc(ph.title || 'photo ' + (i + 1))}"
+                      class="print block w-full text-left p-3 pb-2 rounded-sm cursor-pointer" style="--r:${rot[i % rot.length]}">
+                <img src="${esc(thumbUrl(portfolio, ph))}" alt="${esc(ph.title || '')}" loading="lazy" class="w-full h-auto block">
+                <div class="mt-2 flex justify-between items-baseline gap-2 font-mono text-[11px] text-stone-800">
+                  <span class="font-bold truncate">${esc(ph.title || '')}</span>
+                  <span class="text-amber-800 flex-shrink-0">${String(i + 1).padStart(2, '0')}</span>
+                </div>
+              </button>
+            </div>`).join('');
+        }
+      }
+
+      document.getElementById('pf-others').innerHTML = PORTFOLIOS
+        .filter(p => p !== portfolio)
+        .map(p => `<a href="portfolio.html?p=${encodeURIComponent(p.id)}" class="bg-stone-800 hover:bg-stone-700 text-amber-200 border border-amber-700 px-3 py-1.5 rounded uppercase">${esc(p.title)}</a>`)
+        .join('');
+    }
+
+    function showLb(i) {
+      const ph = portfolio.photos[i];
+      cur = i;
+      const img = document.getElementById('lb-img');
+      img.src = photoUrl(portfolio, ph);
+      img.alt = ph.title || '';
+      document.getElementById('lb-title').textContent = ph.title || '';
+      document.getElementById('lb-note').textContent = ph.note || '';
+      document.getElementById('lb-pos').textContent = (i + 1) + ' of ' + portfolio.photos.length;
+      document.getElementById('lb-prev').disabled = i === 0;
+      document.getElementById('lb-next').disabled = i === portfolio.photos.length - 1;
+      // warm the cache for the neighbours so Next/Prev feel instant
+      [i - 1, i + 1].forEach(j => { if (portfolio.photos[j]) new Image().src = photoUrl(portfolio, portfolio.photos[j]); });
+    }
+    function openLb(i, el) {
+      opener = el || document.activeElement;
+      showLb(i);
+      document.getElementById('lb').classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+      document.getElementById('lb-dialog').focus();
+    }
+    function stepLb(d) {
+      const n = cur + d;
+      if (cur !== -1 && n >= 0 && n < portfolio.photos.length) showLb(n);
+    }
+    function closeLb() {
+      document.getElementById('lb').classList.add('hidden');
+      document.body.style.overflow = '';
+      cur = -1;
+      if (opener && opener.focus) opener.focus();
+    }
+    document.addEventListener('keydown', e => {
+      if (cur === -1) return;
+      if (e.key === 'Escape') closeLb();
+      else if (e.key === 'ArrowLeft') stepLb(-1);
+      else if (e.key === 'ArrowRight') stepLb(1);
+    });
+
+    init();
+  </script>
+</body>
+</html>

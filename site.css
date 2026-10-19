@@ -1,0 +1,221 @@
+/* Wood Paneling Texture via CSS Gradients */
+    body {
+      background-color: #241408;
+      background-image: 
+        linear-gradient(90deg, 
+          rgba(0,0,0,0.5) 0px, 
+          transparent 3px, 
+          transparent 120px, 
+          rgba(0,0,0,0.4) 123px,
+          rgba(255,255,255,0.03) 125px,
+          transparent 128px
+        ),
+        linear-gradient(0deg,
+          #2c180a 0%,
+          #3d220f 25%,
+          #311b0b 50%,
+          #442611 75%,
+          #2a1608 100%
+        );
+      background-size: 130px 100%, 100% 400px;
+    }
+
+    /* Shelf Cubby Recessed Depth Effect */
+    .cubby-depth {
+      background-color: #1a0d05;
+      box-shadow: 
+        inset 0 12px 28px rgba(0, 0, 0, 0.95),
+        inset 12px 0 20px rgba(0, 0, 0, 0.85),
+        inset -12px 0 20px rgba(0, 0, 0, 0.85),
+        inset 0 -8px 16px rgba(0, 0, 0, 0.7);
+      border-top: 14px solid #140a04;
+      border-bottom: 16px solid #4a2d18;
+      border-left: 12px solid #28150a;
+      border-right: 12px solid #28150a;
+    }
+
+    /* Parchment Card Styling */
+    .parchment-card {
+      background-color: #f5eedf;
+      background-image: radial-gradient(#e2d3be 1px, transparent 0);
+      background-size: 24px 24px;
+      box-shadow: 
+        3px 4px 10px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(139, 90, 43, 0.2);
+    }
+
+    /* Brass Label Plate Styling */
+    .brass-plate {
+      background: linear-gradient(135deg, #ffe89e 0%, #c59b27 40%, #8a6810 70%, #eac252 100%);
+      box-shadow: 
+        0 4px 8px rgba(0, 0, 0, 0.7),
+        inset 0 1px 1px rgba(255, 255, 255, 0.8),
+        inset 0 -1px 2px rgba(0, 0, 0, 0.8);
+      border: 1px solid #5a4209;
+    }
+
+    /* ============================================================
+       ZINE SHELF
+       ============================================================ */
+
+    /* Row of spines: extra top padding so the hover "pull out" lift
+       is never clipped by the scroll container. */
+    .zine-rack {
+      scrollbar-width: thin;
+      scrollbar-color: #5c3a21 #1a0d05;
+    }
+
+    /* Wooden plank the zines stand on */
+    .zine-plank {
+      height: 14px;
+      background: linear-gradient(180deg, #6b4423 0%, #4a2e1b 55%, #2a1608 100%);
+      box-shadow: 0 6px 12px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.12);
+      border-radius: 2px;
+    }
+
+    .zine-spine {
+      position: relative;
+      transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.25s ease;
+      box-shadow: -3px 0 8px rgba(0, 0, 0, 0.6), inset 1px 0 2px rgba(255, 255, 255, 0.2), inset -1px 0 2px rgba(0,0,0,0.5);
+      /* subtle paper-edge texture */
+      background-image:
+        linear-gradient(90deg, rgba(255,255,255,0.08) 0%, transparent 18%, transparent 82%, rgba(0,0,0,0.25) 100%);
+    }
+    .zine-spine:hover,
+    .zine-spine:focus-visible {
+      transform: translateY(-14px);
+      box-shadow: -6px 16px 24px rgba(0, 0, 0, 0.95), inset 1px 0 3px rgba(255, 255, 255, 0.4);
+      z-index: 30;
+      outline: none;
+    }
+    .zine-spine:focus-visible {
+      box-shadow: 0 0 0 3px #f5d77f, -6px 16px 24px rgba(0, 0, 0, 0.95);
+    }
+
+    /* Vertical title: wraps onto a second column if it's long, so it
+       never overflows the spine. Reads bottom-to-top like a real spine. */
+    .vertical-title {
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      white-space: normal;
+      text-align: center;
+      line-height: 1.15;
+      max-height: 100%;
+      overflow: hidden;
+    }
+
+    /* Gold bands across the spine, like a bound magazine */
+    .spine-band {
+      width: 100%;
+      height: 3px;
+      border-top: 1px solid rgba(245, 215, 127, 0.55);
+      border-bottom: 1px solid rgba(245, 215, 127, 0.25);
+    }
+
+    /* Bookmark ribbon on the newest issue */
+    .zine-ribbon {
+      position: absolute;
+      top: -6px;
+      right: 6px;
+      width: 12px;
+      height: 34px;
+      background: #8b1a1a;
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 80%, 0 100%);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.6);
+    }
+
+    /* Zine reader modal */
+    .zine-dropcap::first-letter {
+      font-family: 'Cinzel', serif;
+      font-weight: 800;
+      font-size: 3.2rem;
+      float: left;
+      line-height: 0.85;
+      padding: 0.3rem 0.5rem 0 0;
+      color: #7a2e12;
+    }
+    .zine-page-in {
+      animation: zinePageIn 0.28s ease-out;
+    }
+    @keyframes zinePageIn {
+      from { opacity: 0; transform: translateY(8px) rotate(-0.4deg); }
+      to   { opacity: 1; transform: translateY(0) rotate(0); }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .zine-spine, .zine-page-in { transition: none; animation: none; }
+    }
+
+    /* ============================================================
+       PORTFOLIO SHELF
+       ============================================================ */
+    .portfolio-case {
+      background-color: var(--leather, #4a2a1a);
+      background-image:
+        radial-gradient(rgba(255,255,255,0.05) 1px, transparent 0),
+        linear-gradient(145deg, rgba(255,255,255,0.14) 0%, rgba(0,0,0,0) 40%, rgba(0,0,0,0.45) 100%);
+      background-size: 6px 6px, 100% 100%;
+      box-shadow: -4px 6px 14px rgba(0,0,0,0.8), inset 0 0 0 1px rgba(0,0,0,0.5), inset 2px 0 3px rgba(255,255,255,0.12);
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+    .portfolio-print {
+      transform: rotate(var(--tilt, -3deg));
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.6);
+    }
+    .portfolio:hover .portfolio-print,
+    .portfolio:focus-visible .portfolio-print {
+      transform: translateY(-24px) rotate(calc(var(--tilt, -3deg) * 0.3));
+    }
+    .portfolio:hover .portfolio-case,
+    .portfolio:focus-visible .portfolio-case {
+      transform: translateY(-4px);
+      box-shadow: -6px 14px 22px rgba(0,0,0,0.9), inset 0 0 0 1px rgba(0,0,0,0.5), inset 2px 0 3px rgba(255,255,255,0.12);
+    }
+    .portfolio:focus-visible { outline: none; }
+    .portfolio:focus-visible .portfolio-case { box-shadow: 0 0 0 3px #f5d77f, -6px 14px 22px rgba(0,0,0,0.9); }
+    .pc { position: absolute; width: 22px; height: 22px; background: linear-gradient(135deg, #ffe89e, #c59b27 60%, #8a6810); box-shadow: 0 1px 2px rgba(0,0,0,0.7); }
+    .pc.tl { top: 0; left: 0; border-radius: 6px 0 14px 0; }
+    .pc.tr { top: 0; right: 0; border-radius: 0 6px 0 14px; }
+    .pc.bl { bottom: 0; left: 0; border-radius: 0 14px 0 6px; }
+    .pc.br { bottom: 0; right: 0; border-radius: 14px 0 6px 0; }
+    @media (prefers-reduced-motion: reduce) {
+      .portfolio-case, .portfolio-print { transition: none; }
+    }
+
+    /* Leather Book Spine Nav */
+    .book-spine {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: -4px 4px 8px rgba(0,0,0,0.6);
+    }
+    .book-spine:hover {
+      transform: translateY(-6px) scale(1.02);
+      box-shadow: -6px 8px 14px rgba(0,0,0,0.8);
+    }
+
+    /* Photo Frame / Polaroid Effect */
+    .photo-polaroid {
+      transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.25s ease;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.6);
+    }
+    .photo-polaroid:hover {
+      transform: translateY(-8px) rotate(0deg) scale(1.03) !important;
+      box-shadow: 0 16px 28px rgba(0,0,0,0.8);
+      z-index: 20;
+    }
+
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #1a0d05;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #5c3a21;
+      border: 2px solid #241408;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #8B5A2B;
+    }
