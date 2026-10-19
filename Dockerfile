@@ -1,7 +1,11 @@
 FROM nginx:alpine
 
-# Serve the hub page as the site root
-COPY main.html /usr/share/nginx/html/index.html
+# Server config: serves the site and lists photos/ as JSON
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# The whole site (pages, scripts, styles, and every photos/ folder).
+# Anything that shouldn't be public is excluded in .dockerignore.
+COPY . /usr/share/nginx/html/
 
 EXPOSE 80
 

@@ -119,7 +119,8 @@
   <script>
     const params = new URLSearchParams(location.search);
     const wanted = params.get('p');
-    const portfolio = PORTFOLIOS.find(p => p.id === wanted);
+    let PORTFOLIOS = [];
+    let portfolio = null;
 
     let cur = -1;      // index of photo open in the lightbox
     let opener = null; // element to refocus on close
@@ -130,7 +131,17 @@
       document.getElementById('pf-empty-text').textContent = text;
     }
 
-    function init() {
+    async function init() {
+      try {
+        PORTFOLIOS = await loadPortfolios();
+      } catch (err) {
+        console.error('Could not load portfolios', err);
+        document.getElementById('pf-title').textContent = 'Portfolio unavailable';
+        showEmpty('The portfolios could not be loaded right now.', 'Try again in a moment.');
+        return;
+      }
+      portfolio = PORTFOLIOS.find(p => p.id === wanted) || null;
+
       if (!portfolio) {
         document.getElementById('pf-title').textContent = 'Portfolio not found';
         showEmpty('That portfolio is not on the shelf.', 'Pick one from the shelf on the home page.');
@@ -144,6 +155,7 @@
         if (n === 0) {
           showEmpty('Nothing in here yet.', 'New prints are on their way.');
         } else {
+          document.getElementById('pf-empty').classList.add('hidden');
           const rot = ['-1.2deg', '0.9deg', '-0.6deg', '1.4deg', '-0.9deg', '0.5deg'];
           document.getElementById('pf-grid').innerHTML = portfolio.photos.map((ph, i) => `
             <div class="break-inside-avoid mb-6">

@@ -1,68 +1,142 @@
 /* ==================================================================
-   YOUR PHOTOS LIVE HERE.  This is the only file you need to edit
-   to add photos or portfolios.
+   PORTFOLIOS ARE FOUND AUTOMATICALLY.
 
-   ADD A PHOTO
-     1. Drop the image file into that portfolio's folder
-        (e.g. photos/street/).
-     2. Add one line to that portfolio's `photos` list:
-          { file: 'my-photo.jpg', title: 'Nice Title', note: 'Camera • Place' },
-     That's it. The first photo in the list is the cover on the shelf.
+   ADD A PORTFOLIO   Make a new folder inside photos/
+                     (e.g. photos/Ducks/). It shows up on the shelf.
+   ADD A PHOTO       Drop an image (.jpg .jpeg .png .webp .gif .avif)
+                     into that folder. That's it.
 
-   ADD A PORTFOLIO
-     Copy a whole { id: ... } block below, give it a new unique `id`
-     (lowercase, no spaces), a new `folder`, and make the folder.
+   ORDER             Photos are sorted by file name, so prefix them
+                     01-, 02-, ... to choose the order.
+                     A file named cover.jpg (any image type) is the
+                     cover on the shelf; otherwise the first photo is.
+   TITLES            Come from the file name:
+                     "03-midnight-alley.jpg" -> "Midnight Alley".
+                     Camera names like IMG_1234.jpg get no title.
 
-   TIPS
-     - `file` can also be a full web address (https://...).
-     - Optional per photo: `thumb: 'small-version.jpg'` for a lighter
-       grid image (the grid falls back to `file`).
-     - Resize photos to ~2000px on the long edge before uploading so
-       the page loads fast.
+   OPTIONAL EXTRAS   Want a blurb, a colour, or a caption? Add an
+                     entry to EXTRAS below, keyed by the folder name.
+                     Anything you leave out gets a sensible default.
+
+   This works because the web server (nginx.conf) is set to list the
+   contents of photos/ as JSON. Resize photos to ~2000px on the long
+   edge before uploading so the page loads fast.
    ================================================================== */
 
-const PORTFOLIOS = [
-  {
-    id: 'street',
+const EXTRAS = {
+  'street': {
     title: 'Street',
     blurb: 'Portland, after dark',
-    color: '#5a1f1f',          // leather colour of the case
-    tilt: '-3deg',             // how the cover print leans
-    folder: 'photos/street/',
-    photos: [
-      { file: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1600&q=80',
-        thumb: 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=700&q=80',
-        title: 'Midnight Alley Shadows', note: 'Digital Monochrome • Portland, OR' },
-      // { file: 'next-photo.jpg', title: 'Title', note: 'Camera • Place' },
-    ]
+    color: '#5a1f1f',            // leather colour of the case
+    tilt: '-3deg',               // how the cover print leans
+    // order: 1,                 // lower numbers sit further left
+    // photos: {                 // per-photo captions, keyed by file name
+    //   '01-midnight-alley.jpg': { title: 'Midnight Alley Shadows', note: 'Digital Monochrome • Portland, OR' },
+    // },
   },
-  {
-    id: 'concerts',
+  'concerts': {
     title: 'Concerts',
     blurb: 'Sessions & stages',
     color: '#1f3a2d',
     tilt: '2.5deg',
-    folder: 'photos/concerts/',
-    photos: [
-      { file: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=1600&q=80',
-        thumb: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=700&q=80',
-        title: 'Acoustic Stage Lights', note: '35mm Film • Traditional Irish Session' },
-    ]
   },
-  {
-    id: 'nature',
-    title: 'Nature',
-    blurb: 'Pacific Northwest',
-    color: '#24344a',
-    tilt: '-2deg',
-    folder: 'photos/nature/',
-    photos: [
-      { file: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1600&q=80',
-        thumb: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=700&q=80',
-        title: 'Misty River Valley', note: 'Medium Format • Pacific Northwest' },
-    ]
+  'Ducks': {
+    blurb: 'Feathered friends',
+  },
+  'Portland Meetup': {
+    blurb: 'Photo walks around town',
+  },
+};
+
+/* ---------- discovery (no need to edit below here) ---------- */
+const PHOTO_ROOT = 'photos/';
+const IMAGE_RE = /\.(jpe?g|png|webp|gif|avif)$/i;
+const LEATHERS = ['#5a1f1f', '#1f3a2d', '#24344a', '#4a2a14', '#3b1f2d', '#2d3728', '#3d2b1f'];
+const TILTS = ['-3deg', '2.5deg', '-2deg', '1.5deg', '-1deg', '3deg'];
+
+async function listDir(path) {
+  const res = await fetch(path, { cache: 'no-cache' });
+  if (!res.ok) throw new Error(path + ' → HTTP ' + res.status);
+  const data = await res.json();
+  if (!Array.isArray(data)) throw new Error(path + ' did not return a folder listing');
+  return data;
+}
+
+function slugify(name) {
+  return String(name).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'portfolio';
+}
+
+function titleFromFile(name) {
+  const base = name.replace(/\.[^.]+$/, '');
+  if (/^(img|dsc[fn]?|pxl|p|dji|gopr|mvimg)[_-]?\d/i.test(base) || /^\d+$/.test(base)) return '';
+  return base
+    .replace(/^\d+[\s._-]+/, '')              // "03-" ordering prefix
+    .replace(/[_-]+/g, ' ')
+    .trim()
+    .replace(/\b\w/g, c => c.toUpperCase());
+}
+
+function findExtras(folderName) {
+  if (EXTRAS[folderName]) return EXTRAS[folderName];
+  const key = Object.keys(EXTRAS).find(k => k.toLowerCase() === folderName.toLowerCase());
+  return key ? EXTRAS[key] : {};
+}
+
+const byName = (a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
+
+async function loadPortfolio(dirName, index, usedIds) {
+  const extra = findExtras(dirName);
+  const folder = PHOTO_ROOT + encodeURIComponent(dirName) + '/';
+  const files = (await listDir(folder))
+    .filter(e => e.type === 'file' && IMAGE_RE.test(e.name))
+    .map(e => e.name)
+    .sort(byName);
+
+  // cover.* goes first so it becomes the shelf cover
+  const coverIdx = files.findIndex(f => /^cover\./i.test(f));
+  if (coverIdx > 0) files.unshift(files.splice(coverIdx, 1)[0]);
+
+  const captions = extra.photos || {};
+  let id = slugify(dirName);
+  while (usedIds.has(id)) id += '-2';
+  usedIds.add(id);
+
+  return {
+    id,
+    title: extra.title || dirName,
+    blurb: extra.blurb || '',
+    color: extra.color || LEATHERS[index % LEATHERS.length],
+    tilt: extra.tilt || TILTS[index % TILTS.length],
+    order: extra.order != null ? extra.order : 1000,
+    folder,
+    photos: files.map(f => ({
+      file: encodeURIComponent(f),
+      title: (captions[f] && captions[f].title) || titleFromFile(f),
+      note: (captions[f] && captions[f].note) || '',
+    })),
+  };
+}
+
+let _portfoliosPromise = null;
+/** Returns a promise of every portfolio found in photos/. */
+function loadPortfolios() {
+  if (!_portfoliosPromise) {
+    _portfoliosPromise = (async () => {
+      const dirs = (await listDir(PHOTO_ROOT))
+        .filter(e => e.type === 'directory' && !e.name.startsWith('.') && !e.name.startsWith('_'))
+        .map(e => e.name)
+        .sort(byName);
+      const usedIds = new Set();
+      const list = [];
+      for (let i = 0; i < dirs.length; i++) {
+        try { list.push(await loadPortfolio(dirs[i], i, usedIds)); }
+        catch (err) { console.warn('Skipping portfolio', dirs[i], err); }
+      }
+      return list.sort((a, b) => (a.order - b.order) || byName(a.title, b.title));
+    })();
   }
-];
+  return _portfoliosPromise;
+}
 
 /* ---------- helpers used by index.html and portfolio.html ---------- */
 function esc(str) {
