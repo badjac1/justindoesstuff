@@ -10,9 +10,8 @@
                      01-, 02-, ... to choose the order.
                      A file named cover.jpg (any image type) is the
                      cover on the shelf; otherwise the first photo is.
-   TITLES            Come from the file name:
-                     "03-midnight-alley.jpg" -> "Midnight Alley".
-                     Camera names like IMG_1234.jpg get no title.
+   TITLES            Photos have no titles by default. Add a caption
+                     in EXTRAS below if you ever want one.
 
    OPTIONAL EXTRAS   Want a blurb, a colour, or a caption? Add an
                      entry to EXTRAS below, keyed by the folder name.
@@ -111,7 +110,7 @@ async function loadPortfolio(dirName, index, usedIds) {
     folder,
     photos: files.map(f => ({
       file: encodeURIComponent(f),
-      title: (captions[f] && captions[f].title) || titleFromFile(f),
+      title: (captions[f] && captions[f].title) || '',
       note: (captions[f] && captions[f].note) || '',
     })),
   };
