@@ -1,23 +1,12 @@
-/* Wood Paneling Texture via CSS Gradients */
+/* Wood Paneling Texture (photo) */
     body {
       background-color: #241408;
-      background-image: 
-        linear-gradient(90deg, 
-          rgba(0,0,0,0.5) 0px, 
-          transparent 3px, 
-          transparent 120px, 
-          rgba(0,0,0,0.4) 123px,
-          rgba(255,255,255,0.03) 125px,
-          transparent 128px
-        ),
-        linear-gradient(0deg,
-          #2c180a 0%,
-          #3d220f 25%,
-          #311b0b 50%,
-          #442611 75%,
-          #2a1608 100%
-        );
-      background-size: 130px 100%, 100% 400px;
+      /* First layer darkens the photo; raise/lower the 0.45 to taste */
+      background-image:
+        linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)),
+        url("wood-panels-texture-1.jpg");
+      background-repeat: repeat;
+      background-size: auto, 600px auto; /* second value scales the grain */
     }
 
     /* Shelf Cubby Recessed Depth Effect */
@@ -29,7 +18,7 @@
         inset -12px 0 20px rgba(0, 0, 0, 0.85),
         inset 0 -8px 16px rgba(0, 0, 0, 0.7);
       border-top: 14px solid #140a04;
-      border-bottom: 16px solid #4a2d18;
+      border-bottom: 16px solid #382319;
       border-left: 12px solid #28150a;
       border-right: 12px solid #28150a;
     }
