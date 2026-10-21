@@ -73,8 +73,8 @@
           </div>
         </div>
 
-        <!-- Photo grid: columns keep each photo's real proportions -->
-        <div id="pf-grid" class="columns-1 sm:columns-2 lg:columns-3 gap-6"></div>
+        <!-- Photo grid: fills left to right in rows; items-start keeps each photo's real proportions -->
+        <div id="pf-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-start"></div>
 
         <!-- Shown for an unknown / empty portfolio -->
         <div id="pf-empty" class="hidden parchment-card rounded p-8 text-center">
@@ -159,7 +159,7 @@
           document.getElementById('pf-empty').classList.add('hidden');
           const rot = ['-1.2deg', '0.9deg', '-0.6deg', '1.4deg', '-0.9deg', '0.5deg'];
           document.getElementById('pf-grid').innerHTML = portfolio.photos.map((ph, i) => `
-            <div class="break-inside-avoid mb-6">
+            <div>
               <button type="button" onclick="openLb(${i}, this)" aria-label="View ${esc(ph.title || 'photo ' + (i + 1))}"
                       class="print block w-full text-left p-3 pb-2 rounded-sm cursor-pointer" style="--r:${rot[i % rot.length]}">
                 <img src="${esc(thumbUrl(portfolio, ph))}" alt="${esc(ph.title || '')}" loading="lazy" class="w-full h-auto block">
