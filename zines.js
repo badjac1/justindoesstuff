@@ -11,6 +11,15 @@
    ORDER          By folder name, oldest first: prefix 01-, 02-, ...
                   The number is also the "Vol" on the spine.
 
+   PDF ZINES      Instead of issue.md, drop a PDF in the issue folder
+                  (e.g. zines/05-winter/winter.pdf). Every PDF page becomes
+                  a page of a flip-through booklet, exactly as you designed
+                  it: page 1 is the front cover, the last page the back
+                  cover, and the page size comes from the PDF. The reader
+                  gets a Download PDF button, so your PDF is also the print
+                  master. An optional issue.md next to it can still set
+                  title, kicker, date and color (its text is ignored).
+
    issue.md       Starts with an optional header between --- lines,
                   then the text in Markdown (blank line = new paragraph,
                   **bold**, *italic*, ## heading, [link](https://...)):
@@ -110,8 +119,12 @@ async function loadZine(dirName, index) {
     fetch(folder + 'issue.md', { cache: 'no-cache' }),
     listDir(folder).catch(() => []),
   ]);
-  if (!res.ok) throw new Error(folder + 'issue.md → HTTP ' + res.status);
-  const { meta, body } = parseFrontmatter(await res.text());
+  const pdf = files
+    .filter(e => e.type === 'file' && /\.pdf$/i.test(e.name))
+    .map(e => e.name)
+    .sort((a, b) => (/^issue\.pdf$/i.test(b) - /^issue\.pdf$/i.test(a)) || byName(a, b))[0];
+  if (!res.ok && !pdf) throw new Error(folder + 'issue.md → HTTP ' + res.status);
+  const { meta, body } = res.ok ? parseFrontmatter(await res.text()) : { meta: {}, body: '' };
 
   const num = dirName.match(/^(\d+)/);
   const dates = zineDates(meta.date);
@@ -127,7 +140,8 @@ async function loadZine(dirName, index) {
     dateLong: dates.dateLong,
     color: /^#[0-9a-f]{3,8}$/i.test(meta.color || '') ? meta.color : ZINE_COLORS[index % ZINE_COLORS.length],
     height: ZINE_HEIGHTS[index % ZINE_HEIGHTS.length],
-    html: renderZineBody(coverMd + body, folder),
+    pdfSrc: pdf ? folder + encodeURIComponent(pdf) : '',
+    html: pdf ? '' : renderZineBody(coverMd + body, folder),
   };
 }
 

@@ -126,6 +126,14 @@
           <p id="zine-count" class="text-amber-300/60 font-mono text-xs uppercase tracking-widest"></p>
         </div>
 
+        <!-- Filters: shown once the shelf holds both zines (PDF) and posts (text) -->
+        <div id="zine-filters" class="hidden flex-wrap items-center gap-2 mb-1 font-mono text-[11px] font-bold uppercase tracking-widest" role="group" aria-label="Filter the shelf">
+          <span class="text-amber-300/60">Show</span>
+          <button type="button" data-filter="all" onclick="setZineFilter('all')" class="zine-filter" aria-pressed="true">All</button>
+          <button type="button" data-filter="zine" onclick="setZineFilter('zine')" class="zine-filter" aria-pressed="false">Zines <span class="opacity-70" id="zine-filter-zines"></span></button>
+          <button type="button" data-filter="post" onclick="setZineFilter('post')" class="zine-filter" aria-pressed="false">Posts <span class="opacity-70" id="zine-filter-posts"></span></button>
+        </div>
+
         <!-- Spines + plank -->
         <div class="relative">
           <div id="zine-spines" class="zine-rack flex items-end justify-start gap-2 md:gap-2.5 overflow-x-auto pt-8 pb-0 px-3" role="list" aria-label="Zine issues"></div>
@@ -261,11 +269,58 @@
     </div>
   </div>
 
+  <!-- PDF ZINE READER: a flippable booklet (see zinebook.js) -->
+  <div id="zine-book-modal" class="fixed inset-0 z-50 bg-black/90 hidden backdrop-blur-sm flex flex-col">
+    <div id="zine-book-dialog" role="dialog" aria-modal="true" aria-labelledby="zine-book-title" tabindex="-1"
+         class="flex flex-col flex-1 min-h-0 focus:outline-none">
+
+      <div class="flex items-start justify-between gap-4 px-5 pt-4 pb-2">
+        <div class="min-w-0">
+          <span id="zine-book-kicker" class="text-xs font-mono font-bold text-amber-300/80 uppercase"></span>
+          <h2 id="zine-book-title" class="font-display font-bold text-xl md:text-2xl text-amber-50 truncate"></h2>
+        </div>
+        <div class="flex items-center gap-3 flex-shrink-0">
+          <a id="zine-download" href="#" download class="font-display text-xs font-bold bg-stone-200 hover:bg-stone-300 text-stone-900 border border-stone-400 px-3 py-2 rounded flex items-center gap-1.5">
+            <i data-lucide="download" class="w-4 h-4"></i> <span>PDF</span>
+          </a>
+          <button type="button" onclick="closeZine()" aria-label="Close zine"
+                  class="brass-plate w-8 h-8 rounded-full flex items-center justify-center text-amber-950 font-bold shadow-lg">✕</button>
+        </div>
+      </div>
+
+      <!-- The book is drawn in here -->
+      <div id="zine-stage" class="zbook-stage flex-1 min-h-0 flex items-center justify-center overflow-hidden"></div>
+
+      <div class="flex items-center justify-between gap-2 px-4 pb-4 pt-2 font-display text-xs font-bold">
+        <button id="zine-book-prev" type="button" onclick="stepZine(-1)"
+                class="bg-stone-200 hover:bg-stone-300 disabled:opacity-30 disabled:cursor-not-allowed text-stone-900 border border-stone-400 px-3 py-2 rounded flex items-center gap-1.5">
+          <i data-lucide="chevrons-left" class="w-4 h-4"></i> <span id="zine-book-prev-label">Older</span>
+        </button>
+        <div class="flex items-center gap-2">
+          <button id="zine-page-prev" type="button" onclick="zineBook && zineBook.prev()" aria-label="Previous page"
+                  class="bg-amber-900 hover:bg-amber-800 disabled:opacity-30 disabled:cursor-not-allowed text-amber-100 w-9 h-9 rounded flex items-center justify-center">
+            <i data-lucide="chevron-left" class="w-4 h-4 text-amber-300"></i>
+          </button>
+          <span id="zine-book-position" aria-live="polite" class="font-mono text-[11px] text-amber-200 uppercase tracking-widest min-w-[8.5rem] text-center"></span>
+          <button id="zine-page-next" type="button" onclick="zineBook && zineBook.next()" aria-label="Next page"
+                  class="bg-amber-900 hover:bg-amber-800 disabled:opacity-30 disabled:cursor-not-allowed text-amber-100 w-9 h-9 rounded flex items-center justify-center">
+            <i data-lucide="chevron-right" class="w-4 h-4 text-amber-300"></i>
+          </button>
+        </div>
+        <button id="zine-book-next" type="button" onclick="stepZine(1)"
+                class="bg-stone-200 hover:bg-stone-300 disabled:opacity-30 disabled:cursor-not-allowed text-stone-900 border border-stone-400 px-3 py-2 rounded flex items-center gap-1.5">
+          <span id="zine-book-next-label">Newer</span> <i data-lucide="chevrons-right" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- INTERACTIVE SCRIPTS -->
   <script src="https://unpkg.com/marked@12.0.2/marked.min.js"></script>
   <script src="https://unpkg.com/dompurify@3.1.6/dist/purify.min.js"></script>
   <script src="photos.js"></script>
   <script src="zines.js"></script>
+  <script src="zinebook.js"></script>
   <script>
     // Icons are decoration: if the Lucide CDN fails to load, the rest of the page must still work.
     function safeIcons() {
@@ -297,41 +352,136 @@
         rack.innerHTML = msg('No issues on the shelf yet.');
         return;
       }
-      const latest = zineIssues.length - 1;
+      renderZineSpines();
+    }
 
-      rack.innerHTML = zineIssues.map((issue, i) => `
+    let zineFilter = 'all'; // 'all' | 'zine' (has a PDF) | 'post' (text only)
+
+    function setZineFilter(kind) {
+      zineFilter = kind;
+      renderZineSpines();
+    }
+
+    /** Draws the spines for the current filter. Posts are thin, zines are thick. */
+    function renderZineSpines() {
+      const rack = document.getElementById('zine-spines');
+      const kindOf = (issue) => (issue.pdfSrc ? 'zine' : 'post');
+      const zines = zineIssues.filter(i => kindOf(i) === 'zine').length;
+      const posts = zineIssues.length - zines;
+
+      // filters only make sense when there is something to filter between
+      const filters = document.getElementById('zine-filters');
+      filters.classList.toggle('hidden', !(zines && posts));
+      filters.classList.toggle('flex', !!(zines && posts));
+      if (!(zines && posts)) zineFilter = 'all';
+      document.getElementById('zine-filter-zines').textContent = zines;
+      document.getElementById('zine-filter-posts').textContent = posts;
+      filters.querySelectorAll('[data-filter]').forEach(btn =>
+        btn.setAttribute('aria-pressed', String(btn.dataset.filter === zineFilter)));
+
+      // the newest of each kind gets the ribbon
+      const newest = {};
+      zineIssues.forEach((issue, i) => { newest[kindOf(issue)] = i; });
+
+      rack.innerHTML = zineIssues.map((issue, i) => {
+        const kind = kindOf(issue);
+        if (zineFilter !== 'all' && zineFilter !== kind) return '';
+        const post = kind === 'post';
+        return `
         <div role="listitem" class="flex-shrink-0">
           <button type="button" onclick="openZine(${i}, this)"
-                  aria-label="Open Vol ${esc(issue.vol)}: ${esc(issue.title)}, ${esc(issue.dateLong)}"
-                  class="zine-spine cursor-pointer w-14 md:w-16 border-r-2 border-stone-950 rounded-t-sm px-1.5 pt-2 pb-2 flex flex-col items-center text-amber-100"
-                  style="height:${esc(issue.height)}; background-color:${esc(issue.color)}">
-            ${i === latest ? '<span class="zine-ribbon" title="Newest issue"></span>' : ''}
+                  aria-label="Open ${post ? 'post' : 'zine'} Vol ${esc(issue.vol)}: ${esc(issue.title)}, ${esc(issue.dateLong)}"
+                  class="zine-spine cursor-pointer ${post ? 'w-10 px-1' : 'w-14 md:w-16 px-1.5'} border-r-2 border-stone-950 rounded-t-sm pt-2 pb-2 flex flex-col items-center text-amber-100"
+                  style="height:${post ? `calc(${esc(issue.height)} * 0.82)` : esc(issue.height)}; background-color:${esc(issue.color)}">
+            ${i === newest[kind] ? `<span class="zine-ribbon${post ? ' zine-ribbon-thin' : ''}" title="Newest ${post ? 'post' : 'zine'}"></span>` : ''}
             <div class="text-center w-full">
-              <span class="font-mono text-[10px] font-extrabold text-amber-300 block leading-none">VOL</span>
-              <span class="font-mono text-sm font-bold text-amber-100 block leading-tight">${esc(issue.vol)}</span>
+              <span class="font-mono text-[10px] font-extrabold text-amber-300 block leading-none">${post ? 'NO' : 'VOL'}</span>
+              <span class="font-mono ${post ? 'text-xs' : 'text-sm'} font-bold text-amber-100 block leading-tight">${esc(issue.vol)}</span>
             </div>
             <div class="spine-band mt-1.5"></div>
 
             <div class="flex-1 min-h-0 w-full flex items-center justify-center py-2">
-              <h3 class="vertical-title font-display font-bold text-[13px] md:text-sm text-amber-100 tracking-wide">${esc(issue.title)}</h3>
+              <h3 class="vertical-title font-display font-bold ${post ? 'text-xs' : 'text-[13px] md:text-sm'} text-amber-100 tracking-wide">${esc(issue.title)}</h3>
             </div>
 
             <div class="spine-band mb-1.5"></div>
-            <span class="font-mono text-[10px] text-amber-300/90 font-bold block uppercase">${esc(issue.date)}</span>
+            <span class="font-mono ${post ? 'text-[9px]' : 'text-[10px]'} text-amber-300/90 font-bold block uppercase">${esc(issue.date)}</span>
           </button>
-        </div>
-      `).join('');
+        </div>`;
+      }).join('');
 
-      document.getElementById('zine-count').textContent =
-        zineIssues.length + (zineIssues.length === 1 ? ' issue' : ' issues') + ' on the shelf';
+      const noun = (n, one, many) => n + ' ' + (n === 1 ? one : many);
+      document.getElementById('zine-count').textContent = zineFilter === 'zine' ? noun(zines, 'zine', 'zines')
+        : zineFilter === 'post' ? noun(posts, 'post', 'posts')
+        : [zines && noun(zines, 'zine', 'zines'), posts && noun(posts, 'post', 'posts')].filter(Boolean).join(' · ') + ' on the shelf';
+    }
+
+    let zineBook = null;
+    let zineShowToken = 0;
+
+    /** Older/Newer buttons, shared by both readers (prefix: 'zine' or 'zine-book'). */
+    function setZineNav(prefix, index) {
+      const hasOlder = index > 0;
+      const hasNewer = index < zineIssues.length - 1;
+      document.getElementById(prefix + '-prev').disabled = !hasOlder;
+      document.getElementById(prefix + '-next').disabled = !hasNewer;
+      document.getElementById(prefix + '-prev-label').textContent = hasOlder ? 'Vol ' + zineIssues[index - 1].vol : 'Older';
+      document.getElementById(prefix + '-next-label').textContent = hasNewer ? 'Vol ' + zineIssues[index + 1].vol : 'Newer';
+    }
+
+    /** PDF issue: render its pages and bind them into a flip-through book. */
+    async function showZineBook(index) {
+      const issue = zineIssues[index];
+      const token = ++zineShowToken;
+      document.getElementById('zine-book-kicker').textContent =
+        `Issue #${issue.vol} — ${[issue.kicker, issue.dateLong].filter(Boolean).join(' • ')}`;
+      document.getElementById('zine-book-title').textContent = issue.title;
+      document.getElementById('zine-download').href = issue.pdfSrc;
+      setZineNav('zine-book', index);
+
+      const stage = document.getElementById('zine-stage');
+      if (zineBook) { zineBook.destroy(); zineBook = null; }
+      stage.innerHTML = '<p class="font-mono text-xs text-amber-200/70 uppercase tracking-widest">Binding pages…</p>';
+      document.getElementById('zine-book-position').textContent = '';
+      document.getElementById('zine-page-prev').disabled = true;
+      document.getElementById('zine-page-next').disabled = true;
+
+      let pages;
+      try {
+        pages = await paginatePdf(issue, (n, total) => {
+          if (token === zineShowToken) stage.firstElementChild.textContent = `Binding pages… ${n} / ${total}`;
+        });
+      } catch (err) {
+        console.error('Could not open zine', err);
+        if (token === zineShowToken) stage.firstElementChild.textContent = 'This zine could not be opened.';
+        return;
+      }
+      if (token !== zineShowToken) return; // another issue was opened meanwhile
+      zineBook = new ZineBook(stage, issue, pages, (st) => {
+        document.getElementById('zine-book-position').textContent = st.label;
+        document.getElementById('zine-page-prev').disabled = !st.canPrev;
+        document.getElementById('zine-page-next').disabled = !st.canNext;
+      });
     }
 
     function showZine(index) {
       const issue = zineIssues[index];
       currentZine = index;
+      zineShowToken++;
+      if (zineBook) { zineBook.destroy(); zineBook = null; }
+
+      const isBook = !!issue.pdfSrc;
+      document.getElementById('zine-modal').classList.toggle('hidden', isBook);
+      document.getElementById('zine-book-modal').classList.toggle('hidden', !isBook);
+      if (isBook) {
+        showZineBook(index);
+        document.getElementById('zine-book-dialog').focus();
+        safeIcons();
+        return;
+      }
 
       document.getElementById('zine-modal-kicker').textContent =
-        `Issue #${issue.vol} — ${issue.kicker} • ${issue.dateLong}`;
+        `Issue #${issue.vol} — ${[issue.kicker, issue.dateLong].filter(Boolean).join(' • ')}`;
       document.getElementById('zine-modal-title').textContent = issue.title;
 
       const body = document.getElementById('zine-modal-body');
@@ -349,14 +499,13 @@
       document.getElementById('zine-prev-label').textContent = hasOlder ? 'Vol ' + zineIssues[index - 1].vol : 'Older';
       document.getElementById('zine-next-label').textContent = hasNewer ? 'Vol ' + zineIssues[index + 1].vol : 'Newer';
       document.getElementById('zine-position').textContent = `${index + 1} of ${zineIssues.length}`;
+      document.getElementById('zine-dialog').focus();
     }
 
     function openZine(index, opener) {
       zineOpener = opener || document.activeElement;
       showZine(index);
-      document.getElementById('zine-modal').classList.remove('hidden');
       document.body.style.overflow = 'hidden';
-      document.getElementById('zine-dialog').focus();
       safeIcons();
     }
 
@@ -372,17 +521,20 @@
 
     function closeZine() {
       document.getElementById('zine-modal').classList.add('hidden');
+      document.getElementById('zine-book-modal').classList.add('hidden');
       document.body.style.overflow = '';
+      zineShowToken++;
+      if (zineBook) { zineBook.destroy(); zineBook = null; }
       currentZine = -1;
       if (zineOpener && typeof zineOpener.focus === 'function') zineOpener.focus();
     }
 
-    // Keyboard: Esc closes, arrows flip between issues
+    // Keyboard: Esc closes. Arrows flip between issues (or turn the pages of a PDF zine; Shift+arrows switch issues)
     document.addEventListener('keydown', (e) => {
       if (currentZine === -1) return;
       if (e.key === 'Escape') closeZine();
-      else if (e.key === 'ArrowLeft') stepZine(-1);
-      else if (e.key === 'ArrowRight') stepZine(1);
+      else if (e.key === 'ArrowLeft') { if (zineBook && !e.shiftKey) zineBook.prev(); else stepZine(-1); }
+      else if (e.key === 'ArrowRight') { if (zineBook && !e.shiftKey) zineBook.next(); else stepZine(1); }
     });
 
     renderZineShelf();

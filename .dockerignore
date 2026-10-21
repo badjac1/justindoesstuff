@@ -10,3 +10,4 @@ site
 **/desktop.ini
 **/.DS_Store
 !zines/**/*.md
+dev.py
