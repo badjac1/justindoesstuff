@@ -90,7 +90,7 @@ function renderZineBody(markdown, folder) {
       img.setAttribute('src', folder + src.split('/').map(encodeURIComponent).join('/'));
     }
     img.setAttribute('loading', 'lazy');
-    img.className = 'mx-auto max-w-full h-auto rounded-sm border border-stone-400 shadow-md';
+    img.className = 'mx-auto max-w-full max-h-[60vh] w-auto h-auto object-contain rounded-sm border border-stone-400 shadow-md';
   });
   frag.querySelectorAll('a').forEach(a => {
     a.className = 'underline decoration-amber-700 hover:text-amber-800';
