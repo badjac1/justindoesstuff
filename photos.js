@@ -39,6 +39,9 @@ const EXTRAS = {
     color: '#1f3a2d',
     tilt: '2.5deg',
   },
+  'Animal Photography': {
+    title: 'Animals',
+  },
   'Ducks': {
     blurb: 'Feathered friends',
   },

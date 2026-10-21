@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Justindoesstuff.com — Portfolio & Shelf</title>
+  <title>JDS - Home</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -159,6 +160,9 @@
         <div class="relative">
           <div id="portfolio-shelf" class="flex flex-wrap items-end justify-center gap-x-8 gap-y-16 pt-20 pb-0 px-3" role="list" aria-label="Photography portfolios"></div>
           <div class="zine-plank -mx-2 mt-0" aria-hidden="true"></div>
+        </div>
+        <div class="text-center mt-6">
+          <button id="portfolio-more" type="button" aria-expanded="false" class="hidden brass-plate px-5 py-2 rounded font-display text-xs font-bold text-amber-950 uppercase tracking-widest cursor-pointer">See more portfolios</button>
         </div>
       </div>
     </section>
@@ -558,7 +562,21 @@
         shelf.innerHTML = '<p class="font-mono text-xs text-amber-200/70 uppercase tracking-widest pb-10">No portfolios on the shelf yet.</p>';
         return;
       }
-      shelf.innerHTML = PORTFOLIOS.map((p) => {
+      // Home page shows these four, in this order; the rest appear under "See more".
+      const FEATURED = ['portraits', 'landscapes', 'misc-art', 'animal-photography'];
+      const featured = FEATURED.map((id) => PORTFOLIOS.find((p) => p.id === id)).filter(Boolean);
+      const others = PORTFOLIOS.filter((p) => !featured.includes(p));
+      const moreBtn = document.getElementById('portfolio-more');
+      let expanded = false;
+      const draw = () => {
+        const list = expanded ? featured.concat(others) : featured;
+        shelf.innerHTML = list.map(caseHtml).join('');
+        moreBtn.classList.toggle('hidden', !others.length);
+        moreBtn.textContent = expanded ? 'Show fewer portfolios' : 'See more portfolios';
+        moreBtn.setAttribute('aria-expanded', expanded);
+      };
+      moreBtn.addEventListener('click', () => { expanded = !expanded; draw(); });
+      function caseHtml(p) {
         const count = p.photos.length + (p.photos.length === 1 ? ' print' : ' prints');
         const cover = coverOf(p);
         const coverHtml = cover
@@ -586,7 +604,8 @@
               </div>
             </a>
           </div>`;
-      }).join('');
+      }
+      draw();
     }
     renderPortfolioShelf();
 

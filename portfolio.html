@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Portfolio — Justindoesstuff.com</title>
+  <title>JDS - Photos</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
 
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -146,7 +147,7 @@
         document.getElementById('pf-title').textContent = 'Portfolio not found';
         showEmpty('That portfolio is not on the shelf.', 'Pick one from the shelf on the home page.');
       } else {
-        document.title = portfolio.title + ' — Justindoesstuff.com';
+        document.title = 'JDS - Photos';
         document.getElementById('pf-title').textContent = portfolio.title;
         document.getElementById('pf-blurb').textContent = portfolio.blurb;
         const n = portfolio.photos.length;
