@@ -73,8 +73,8 @@
           </div>
         </div>
 
-        <!-- Photo grid: fills left to right in rows; items-start keeps each photo's real proportions -->
-        <div id="pf-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-start"></div>
+        <!-- Photo grid: justified rows: each photo's width follows its proportions so a row's photos share one height -->
+        <div id="pf-grid" class="flex flex-wrap gap-6"></div>
 
         <!-- Shown for an unknown / empty portfolio -->
         <div id="pf-empty" class="hidden parchment-card rounded p-8 text-center">
@@ -158,8 +158,16 @@
         } else {
           document.getElementById('pf-empty').classList.add('hidden');
           const rot = ['-1.2deg', '0.9deg', '-0.6deg', '1.4deg', '-0.9deg', '0.5deg'];
+          // Measure each photo so a row's photos can share one height (no gaps).
+          const ratios = await Promise.all(portfolio.photos.map(ph => new Promise(resolve => {
+            const im = new Image();
+            im.onload = () => resolve(im.naturalWidth / im.naturalHeight || 1.5);
+            im.onerror = () => resolve(1.5);
+            im.src = thumbUrl(portfolio, ph);
+          })));
+          const ROW_H = 260; // target photo height in px; rows flex around it
           document.getElementById('pf-grid').innerHTML = portfolio.photos.map((ph, i) => `
-            <div>
+            <div style="flex:${ratios[i]} 1 ${Math.round(ratios[i] * ROW_H)}px; min-width:min(100%, ${Math.round(ratios[i] * 150)}px)">
               <button type="button" onclick="openLb(${i}, this)" aria-label="View ${esc(ph.title || 'photo ' + (i + 1))}"
                       class="print block w-full text-left p-3 pb-2 rounded-sm cursor-pointer" style="--r:${rot[i % rot.length]}">
                 <img src="${esc(thumbUrl(portfolio, ph))}" alt="${esc(ph.title || '')}" loading="lazy" class="w-full h-auto block">
@@ -168,7 +176,7 @@
                   <span class="text-amber-800 flex-shrink-0">${String(i + 1).padStart(2, '0')}</span>
                 </div>
               </button>
-            </div>`).join('');
+            </div>`).join('') + '<div style="flex:10 1 0"></div>'; // keeps a short last row from stretching
         }
       }
 
