@@ -176,63 +176,13 @@
       </div>
 
       <div class="cubby-depth rounded-lg p-6 md:p-8 pt-8">
-        <div class="grid md:grid-cols-2 gap-8">
-          
-          <!-- Letter Form -->
-          <form class="parchment-card rounded p-6 space-y-4 border border-amber-900/20 shadow-lg" onsubmit="handleFormSubmit(event)">
-            <h3 class="font-display font-bold text-lg text-stone-900 border-b border-amber-300 pb-2 flex items-center gap-2">
-              <i data-lucide="send" class="w-4 h-4 text-amber-800"></i> Leave a Letter
-            </h3>
-            
-            <div>
-              <label class="block text-xs font-mono font-bold text-amber-900 uppercase mb-1">Your Name</label>
-              <input type="text" required class="w-full bg-amber-50/80 border border-amber-300 rounded p-2.5 text-sm font-body text-stone-900 focus:outline-none focus:ring-2 focus:ring-amber-700" placeholder="Jane Doe">
-            </div>
-
-            <div>
-              <label class="block text-xs font-mono font-bold text-amber-900 uppercase mb-1">Email Address</label>
-              <input type="email" required class="w-full bg-amber-50/80 border border-amber-300 rounded p-2.5 text-sm font-body text-stone-900 focus:outline-none focus:ring-2 focus:ring-amber-700" placeholder="jane@example.com">
-            </div>
-
-            <div>
-              <label class="block text-xs font-mono font-bold text-amber-900 uppercase mb-1">Message</label>
-              <textarea rows="3" required class="w-full bg-amber-50/80 border border-amber-300 rounded p-2.5 text-sm font-body text-stone-900 focus:outline-none focus:ring-2 focus:ring-amber-700" placeholder="Greetings Justin..."></textarea>
-            </div>
-
-            <button type="submit" class="brass-plate w-full py-2.5 rounded font-display font-bold text-amber-950 uppercase tracking-wider flex items-center justify-center gap-2 hover:opacity-95 transition-opacity">
-              <i data-lucide="stamp" class="w-4 h-4"></i> Seal & Send
-            </button>
-          </form>
-
-          <!-- Luggage Tags / Social Keys -->
-          <div class="space-y-4 flex flex-col justify-between">
-            <div class="parchment-card rounded p-6 border border-amber-900/20 shadow-lg space-y-3">
-              <h3 class="font-display font-bold text-lg text-stone-900 border-b border-amber-300 pb-2 flex items-center gap-2">
-                <i data-lucide="key" class="w-4 h-4 text-amber-800"></i> Keychains & External Hubs
-              </h3>
-              
-              <ul class="space-y-2 font-mono text-xs font-bold text-amber-950">
-                <li class="p-2.5 bg-amber-100/60 rounded border border-amber-300 flex items-center justify-between hover:bg-amber-200/60 transition-colors cursor-pointer">
-                  <span class="flex items-center gap-2"><i data-lucide="github" class="w-4 h-4"></i> GitHub Code Vault</span>
-                  <i data-lucide="external-link" class="w-3.5 h-3.5 text-amber-800"></i>
-                </li>
-                <li class="p-2.5 bg-amber-100/60 rounded border border-amber-300 flex items-center justify-between hover:bg-amber-200/60 transition-colors cursor-pointer">
-                  <span class="flex items-center gap-2"><i data-lucide="camera" class="w-4 h-4"></i> High-Res Flickr Album</span>
-                  <i data-lucide="external-link" class="w-3.5 h-3.5 text-amber-800"></i>
-                </li>
-                <li class="p-2.5 bg-amber-100/60 rounded border border-amber-300 flex items-center justify-between hover:bg-amber-200/60 transition-colors cursor-pointer">
-                  <span class="flex items-center gap-2"><i data-lucide="rss" class="w-4 h-4"></i> RSS Zine Feed</span>
-                  <i data-lucide="external-link" class="w-3.5 h-3.5 text-amber-800"></i>
-                </li>
-              </ul>
-            </div>
-
-            <!-- Footer Badge -->
-            <div class="text-center font-mono text-xs text-amber-300/80 p-3 bg-stone-900/80 rounded border border-amber-900/40">
-              © Justindoesstuff.com
-            </div>
-          </div>
-
+        <div class="parchment-card rounded p-8 border border-amber-900/20 shadow-lg text-center space-y-3">
+          <i data-lucide="construction" class="w-8 h-8 text-amber-800 mx-auto"></i>
+          <h3 class="font-display font-bold text-lg text-stone-900 uppercase tracking-wider">Work in Progress</h3>
+          <p class="font-body text-stone-800">The mailbox is still being built. Check back soon!</p>
+        </div>
+        <div class="text-center font-mono text-xs text-amber-300/80 p-3 mt-4 bg-stone-900/80 rounded border border-amber-900/40">
+          © Justindoesstuff.com
         </div>
       </div>
     </section>
@@ -608,13 +558,6 @@
       draw();
     }
     renderPortfolioShelf();
-
-    // Mail Form Handling
-    function handleFormSubmit(e) {
-      e.preventDefault();
-      alert('Your letter has been sealed and sent to Justin!');
-      e.target.reset();
-    }
   </script>
 </body>
 </html>
