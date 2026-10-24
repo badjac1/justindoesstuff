@@ -176,19 +176,15 @@
         } else {
           document.getElementById('pf-empty').classList.add('hidden');
           const rot = ['-1.2deg', '0.9deg', '-0.6deg', '1.4deg', '-0.9deg', '0.5deg'];
-          // Measure each photo so a row's photos can share one height (no gaps).
-          const ratios = await Promise.all(portfolio.photos.map(ph => new Promise(resolve => {
-            const im = new Image();
-            im.onload = () => resolve(im.naturalWidth / im.naturalHeight || 1.5);
-            im.onerror = () => resolve(1.5);
-            im.src = thumbUrl(portfolio, ph);
-          })));
+          // Sizes come from thumbs/sizes.json; a photo without one is laid out as 3:2
+          // and corrected as soon as its image loads.
+          const ratios = portfolio.photos.map(ph => ph.ratio || 1.5);
           const ROW_H = 260; // target photo height in px; rows flex around it
           document.getElementById('pf-grid').innerHTML = portfolio.photos.map((ph, i) => `
             <div style="flex:${ratios[i]} 1 ${Math.round(ratios[i] * ROW_H)}px; min-width:min(100%, ${Math.round(ratios[i] * 150)}px)">
               <button type="button" onclick="openLb(${i}, this)" aria-label="View ${esc(ph.title || 'photo ' + (i + 1))}"
                       class="print block w-full text-left p-3 pb-2 rounded-sm cursor-pointer" style="--r:${rot[i % rot.length]}">
-                <img src="${esc(thumbUrl(portfolio, ph))}" alt="${esc(ph.title || '')}" loading="lazy" class="w-full h-auto block">
+                <img src="${esc(thumbUrl(portfolio, ph))}" alt="${esc(ph.title || '')}" loading="lazy" decoding="async" ${ph.ratio ? `width="${Math.round(ph.ratio * 100)}" height="100" ` : `onload="fitRatio(this)" `}class="w-full h-auto block">
                 <div class="mt-2 flex justify-between items-baseline gap-2 font-mono text-[11px] text-stone-800">
                   <span class="font-bold truncate">${esc(ph.title || '')}</span>
                   <span class="text-amber-800 flex-shrink-0">${String(i + 1).padStart(2, '0')}</span>
@@ -202,6 +198,14 @@
         .filter(p => p !== portfolio)
         .map(p => `<a href="portfolio.html?p=${encodeURIComponent(p.id)}" class="bg-stone-800 hover:bg-stone-700 text-amber-200 border border-amber-700 px-3 py-1.5 rounded uppercase">${esc(p.title)}</a>`)
         .join('');
+    }
+
+    /** For photos with no known size: re-flow their row once the real shape is known. */
+    function fitRatio(img) {
+      const r = img.naturalWidth / img.naturalHeight || 1.5;
+      const cell = img.closest('#pf-grid > div');
+      cell.style.flex = `${r} 1 ${Math.round(r * 260)}px`;
+      cell.style.minWidth = `min(100%, ${Math.round(r * 150)}px)`;
     }
 
     function showLb(i) {

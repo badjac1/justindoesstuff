@@ -11,3 +11,4 @@ site
 **/.DS_Store
 !zines/**/*.md
 dev.py
+make_thumbs.py

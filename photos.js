@@ -86,10 +86,17 @@ function findExtras(folderName) {
 
 const byName = (a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' });
 
-async function loadPortfolio(dirName, index, usedIds) {
+async function loadPortfolio(dirName, index, id) {
   const extra = findExtras(dirName);
   const folder = PHOTO_ROOT + encodeURIComponent(dirName) + '/';
-  const files = (await listDir(folder))
+  // thumbs/ holds small copies made by make_thumbs.py; without it the full photos are used.
+  // Fetched together with the folder listing so the page doesn't wait on them one by one.
+  const [listing, thumbList, sizes] = await Promise.all([
+    listDir(folder),
+    listDir(folder + 'thumbs/').catch(() => []),
+    fetch(folder + 'thumbs/sizes.json').then(r => r.ok ? r.json() : {}).catch(() => ({})),
+  ]);
+  const files = listing
     .filter(e => e.type === 'file' && IMAGE_RE.test(e.name))
     .map(e => e.name)
     .sort(byName);
@@ -98,10 +105,9 @@ async function loadPortfolio(dirName, index, usedIds) {
   const coverIdx = files.findIndex(f => /^cover\./i.test(f));
   if (coverIdx > 0) files.unshift(files.splice(coverIdx, 1)[0]);
 
+  const thumbs = new Set(thumbList.filter(e => e.type === 'file').map(e => e.name));
+
   const captions = extra.photos || {};
-  let id = slugify(dirName);
-  while (usedIds.has(id)) id += '-2';
-  usedIds.add(id);
 
   return {
     id,
@@ -113,6 +119,8 @@ async function loadPortfolio(dirName, index, usedIds) {
     folder,
     photos: files.map(f => ({
       file: encodeURIComponent(f),
+      thumb: thumbs.has(f) ? 'thumbs/' + encodeURIComponent(f) : '',
+      ratio: sizes[f] && sizes[f][1] ? sizes[f][0] / sizes[f][1] : 0, // width / height, 0 = unknown
       title: (captions[f] && captions[f].title) || '',
       note: (captions[f] && captions[f].note) || '',
     })),
@@ -129,11 +137,11 @@ function loadPortfolios() {
         .map(e => e.name)
         .sort(byName);
       const usedIds = new Set();
-      const list = [];
-      for (let i = 0; i < dirs.length; i++) {
-        try { list.push(await loadPortfolio(dirs[i], i, usedIds)); }
-        catch (err) { console.warn('Skipping portfolio', dirs[i], err); }
-      }
+      // ids are claimed in folder order up front, then every folder loads at once
+      const ids = dirs.map(d => { let id = slugify(d); while (usedIds.has(id)) id += '-2'; usedIds.add(id); return id; });
+      const list = (await Promise.all(dirs.map((d, i) =>
+        loadPortfolio(d, i, ids[i]).catch(err => { console.warn('Skipping portfolio', d, err); return null; })
+      ))).filter(Boolean);
       return list.sort((a, b) => (a.order - b.order) || byName(a.title, b.title));
     })();
   }
