@@ -37,7 +37,7 @@ function loadPdfJs() {
 async function paginatePdf(issue, onProgress) {
   if (issue.pageHtml) return issue.pageHtml;
   const lib = await loadPdfJs();
-  const doc = await lib.getDocument(issue.pdfSrc).promise;
+  const doc = await lib.getDocument({ url: issue.pdfSrc, isEvalSupported: false }).promise;
   const first = await doc.getPage(1);
   const base = first.getViewport({ scale: 1 });
   issue.pageW = Math.round(base.width / 72 * ZINE_PX_PER_INCH);
