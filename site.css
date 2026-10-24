@@ -291,3 +291,16 @@
     ::-webkit-scrollbar-thumb:hover {
       background: #8B5A2B;
     }
+
+/* Keep section tops clear of the sticky header when scrolled to */
+main > section[id] { scroll-margin-top: 8rem; }
+
+/* Little arrows on the homepage polaroid */
+.hero-arrow {
+  width: 1.5rem; height: 1.5rem; border-radius: 9999px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 1.1rem; line-height: 1; color: #78350f; cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.hero-arrow:hover { background: rgba(120, 53, 15, 0.12); }
+.hero-arrow:focus-visible { outline: 2px solid #b45309; outline-offset: 1px; }

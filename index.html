@@ -3,8 +3,48 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>JDS - Home</title>
+  <title>Justin Does Stuff | Photography, Zines &amp; Posts from Portland, OR</title>
+  <meta name="description" content="Justin Does Stuff: photography portfolios, zines and posts from Justin in Portland, Oregon. Portraits, landscapes, animals, concerts and more.">
+  <link rel="canonical" href="https://justindoesstuff.com/">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <meta name="theme-color" content="#311b0b">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Justin Does Stuff">
+  <meta property="og:title" content="Justin Does Stuff | Photography, Zines &amp; Posts">
+  <meta property="og:description" content="Photography portfolios, zines and posts from Justin in Portland, Oregon.">
+  <meta property="og:url" content="https://justindoesstuff.com/">
+  <meta property="og:image" content="https://justindoesstuff.com/og-image.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Justin Does Stuff: a wooden bookshelf with a brass nameplate">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://justindoesstuff.com/og-image.jpg">
+  <meta name="twitter:title" content="Justin Does Stuff | Photography, Zines &amp; Posts">
+  <meta name="twitter:description" content="Photography portfolios, zines and posts from Justin in Portland, Oregon.">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": "https://justindoesstuff.com/#website",
+        "url": "https://justindoesstuff.com/",
+        "name": "Justin Does Stuff",
+        "description": "Photography portfolios, zines and posts from Portland, Oregon."
+      },
+      {
+        "@type": "Person",
+        "name": "Justin",
+        "url": "https://justindoesstuff.com/",
+        "homeLocation": { "@type": "Place", "name": "Portland, Oregon" },
+        "knowsAbout": ["Photography", "Zines", "Banjo"]
+      }
+    ]
+  }
+  </script>
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -78,10 +118,10 @@
                 CURRENTLY ON THE DOCKET
               </div>
               <h1 class="font-display font-bold text-2xl md:text-4xl text-stone-900 leading-snug">
-                Welcome to my library.
+                I'm Justin, I do stuff.
               </h1>
               <p class="text-stone-700 leading-relaxed font-body text-base md:text-lg">
-                I'm Justin. I do stuff! Currently I'm working on setting up this site and traipsing around town looking for new friends! Feel free to take a look at everything on the site and reach out if anything interests you! I'm also in the Portland area, if you are interested in getting coffee.
+                Currently I'm working on setting up this site and traipsing around town looking for new friends! Feel free to take a look at everything on the site and reach out if anything interests you! I'm also in the Portland area, if you are interested in getting coffee.
               </p>
               <div class="pt-2 flex flex-wrap gap-3 font-display text-sm">
                 <a href="#photography" class="bg-amber-900 hover:bg-amber-800 text-amber-100 font-bold px-4 py-2 rounded shadow flex items-center gap-2 transition-all">
@@ -94,16 +134,19 @@
               </div>
             </div>
 
-            <!-- Side Desk Prop / Quick Note -->
-            <div class="bg-amber-100/90 p-4 rounded-sm border border-amber-300/80 rotate-[5deg] shadow-[3px_6px_12px_rgba(0,0,0,0.35)] space-y-2 font-mono text-xs text-amber-950">
-              <div class="flex justify-between border-b border-amber-300 pb-1 font-bold">
-                <span>What I'm up to</span>
-                <span> 10/26</span>
+            <!-- Polaroid pinned to the board: a random photo from HERO_PHOTOS (script below) -->
+            <figure class="justify-self-center w-56 md:w-64 bg-stone-50 p-3 pb-4 rounded-sm rotate-[4deg] shadow-[3px_8px_16px_rgba(0,0,0,0.45)] relative">
+              <div class="absolute -top-3 left-1/2 -translate-x-1/2 w-5 h-5 rounded-full bg-gradient-to-br from-red-400 via-red-700 to-red-950 shadow-md border border-red-300"></div>
+              <div class="aspect-[4/5] bg-stone-300 overflow-hidden">
+                <img id="hero-photo" alt="" class="w-full h-full object-cover hidden">
+                <div id="hero-photo-empty" class="w-full h-full flex items-center justify-center font-mono text-[10px] text-stone-600 uppercase tracking-widest">Photo coming soon</div>
               </div>
-              <p>Learning 5-String Banjo</p>
-              <p>Starting Photography Group</p>
-              <p>Enjoying The Fall Colors</p>
-            </div>
+              <figcaption class="mt-3 flex items-center justify-between gap-2 font-mono text-xs font-bold text-stone-700">
+                <button id="hero-prev" type="button" onclick="stepHero(-1)" aria-label="Previous photo" class="hero-arrow">&#8249;</button>
+                <span>Justin doing stuff</span>
+                <button id="hero-next" type="button" onclick="stepHero(1)" aria-label="Next photo" class="hero-arrow">&#8250;</button>
+              </figcaption>
+            </figure>
           </div>
 
         </div>
@@ -134,6 +177,9 @@
           <button type="button" data-filter="zine" onclick="setZineFilter('zine')" class="zine-filter" aria-pressed="false">Zines <span class="opacity-70" id="zine-filter-zines"></span></button>
           <button type="button" data-filter="post" onclick="setZineFilter('post')" class="zine-filter" aria-pressed="false">Posts <span class="opacity-70" id="zine-filter-posts"></span></button>
         </div>
+
+        <!-- Type filters: built from the "type:" line in each issue.md -->
+        <div id="zine-types" class="hidden flex-wrap items-center gap-2 mb-1 font-mono text-[11px] font-bold uppercase tracking-widest" role="group" aria-label="Filter the shelf by type"></div>
 
         <!-- Spines + plank -->
         <div class="relative">
@@ -276,6 +322,55 @@
   <script src="zines.js"></script>
   <script src="zinebook.js"></script>
   <script>
+    // ============================================================
+    // HOMEPAGE POLAROID: one of these is picked at random on each visit.
+    // Put the photos in the me/ folder and list their file names here.
+    // ============================================================
+    const HERO_PHOTOS = [
+      'me/photo-1.jpg',
+      'me/photo-2.jpg',
+      'me/photo-3.jpg',
+      'me/photo-4.jpg',
+      'me/photo-5.jpg',
+      'me/photo-6.jpg',
+    ];
+    let heroIndex = Math.floor(Math.random() * HERO_PHOTOS.length);
+    function showHero() {
+      const img = document.getElementById('hero-photo');
+      img.onload = () => {
+        img.classList.remove('hidden');
+        document.getElementById('hero-photo-empty').classList.add('hidden');
+      };
+      img.alt = 'Photo of Justin';
+      img.src = HERO_PHOTOS[heroIndex];
+    }
+    /** Arrows beside the caption; wraps around at either end. */
+    function stepHero(delta) {
+      heroIndex = (heroIndex + delta + HERO_PHOTOS.length) % HERO_PHOTOS.length;
+      showHero();
+    }
+    if (HERO_PHOTOS.length) showHero();
+    else document.querySelectorAll('.hero-arrow').forEach(b => b.classList.add('hidden'));
+
+    // In-page links scroll to their section without leaving "#section" in the address bar.
+    function scrollToSection(id) {
+      const el = id ? document.getElementById(id) : null;
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      else window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    document.addEventListener('click', (e) => {
+      const a = e.target.closest('a[href^="#"]');
+      if (!a || a.id === 'zine-download') return;
+      e.preventDefault();
+      scrollToSection(a.getAttribute('href').slice(1));
+      history.replaceState(null, '', location.pathname + location.search);
+    });
+    // Arriving from another page (portfolio.html -> index.html#photography): jump there, then tidy the URL.
+    if (location.hash.length > 1) {
+      const target = location.hash.slice(1);
+      history.replaceState(null, '', location.pathname + location.search);
+      window.__arrivalTarget = target;
+    }
     // Icons are decoration: if the Lucide CDN fails to load, the rest of the page must still work.
     function safeIcons() {
       try { if (window.lucide) lucide.createIcons(); } catch (err) { console.warn('Lucide icons unavailable', err); }
@@ -310,9 +405,15 @@
     }
 
     let zineFilter = 'all'; // 'all' | 'zine' (has a PDF) | 'post' (text only)
+    let zineType = '';      // lower-cased type name, or '' for every type
 
     function setZineFilter(kind) {
       zineFilter = kind;
+      renderZineSpines();
+    }
+
+    function setZineType(type) {
+      zineType = zineType === type ? '' : type; // clicking the active type clears it
       renderZineSpines();
     }
 
@@ -333,6 +434,23 @@
       filters.querySelectorAll('[data-filter]').forEach(btn =>
         btn.setAttribute('aria-pressed', String(btn.dataset.filter === zineFilter)));
 
+      // type buttons: one per distinct type, in order of first appearance
+      const typeNames = new Map(); // lower-case -> display name
+      zineIssues.forEach(i => i.types.forEach(t => { if (!typeNames.has(t.toLowerCase())) typeNames.set(t.toLowerCase(), t); }));
+      const untyped = zineIssues.some(i => !i.types.length);
+      const showTypes = typeNames.size > 1 || (typeNames.size === 1 && untyped);
+      if (!typeNames.has(zineType) || !showTypes) zineType = '';
+      const typeBar = document.getElementById('zine-types');
+      typeBar.classList.toggle('hidden', !showTypes);
+      typeBar.classList.toggle('flex', showTypes);
+      typeBar.innerHTML = showTypes
+        ? '<span class="text-amber-300/60">Type</span>' + [...typeNames].map(([key, name]) =>
+            `<button type="button" class="zine-filter" aria-pressed="${key === zineType}" data-type="${esc(key)}">${esc(name)}</button>`).join('')
+        : '';
+      typeBar.querySelectorAll('[data-type]').forEach(btn =>
+        btn.addEventListener('click', () => setZineType(btn.dataset.type)));
+      const hasType = (issue) => !zineType || issue.types.some(t => t.toLowerCase() === zineType);
+
       // the newest of each kind gets the ribbon
       const newest = {};
       zineIssues.forEach((issue, i) => { newest[kindOf(issue)] = i; });
@@ -340,11 +458,12 @@
       rack.innerHTML = zineIssues.map((issue, i) => {
         const kind = kindOf(issue);
         if (zineFilter !== 'all' && zineFilter !== kind) return '';
+        if (!hasType(issue)) return '';
         const post = kind === 'post';
         return `
         <div role="listitem" class="flex-shrink-0">
           <button type="button" onclick="openZine(${i}, this)"
-                  aria-label="Open ${post ? 'post' : 'zine'} Vol ${esc(issue.vol)}: ${esc(issue.title)}, ${esc(issue.dateLong)}"
+                  aria-label="Open ${post ? 'post' : 'zine'} Vol ${esc(issue.vol)}: ${esc(issue.title)}, ${esc(issue.dateLong)}${issue.types.length ? ', ' + esc(issue.types.join(', ')) : ''}"
                   class="zine-spine cursor-pointer ${post ? 'w-10 px-1' : 'w-14 md:w-16 px-1.5'} border-r-2 border-stone-950 rounded-t-sm pt-2 pb-2 flex flex-col items-center text-amber-100"
                   style="height:${post ? `calc(${esc(issue.height)} * 0.82)` : esc(issue.height)}; background-color:${esc(issue.color)}">
             ${i === newest[kind] ? `<span class="zine-ribbon${post ? ' zine-ribbon-thin' : ''}" title="Newest ${post ? 'post' : 'zine'}"></span>` : ''}
@@ -365,6 +484,11 @@
       }).join('');
 
       const noun = (n, one, many) => n + ' ' + (n === 1 ? one : many);
+      if (zineType) {
+        const shown = zineIssues.filter(i => hasType(i) && (zineFilter === 'all' || zineFilter === kindOf(i))).length;
+        document.getElementById('zine-count').textContent = noun(shown, 'issue', 'issues') + ' · ' + typeNames.get(zineType);
+        return;
+      }
       document.getElementById('zine-count').textContent = zineFilter === 'zine' ? noun(zines, 'zine', 'zines')
         : zineFilter === 'post' ? noun(posts, 'post', 'posts')
         : [zines && noun(zines, 'zine', 'zines'), posts && noun(posts, 'post', 'posts')].filter(Boolean).join(' · ') + ' on the shelf';
@@ -388,7 +512,7 @@
       const issue = zineIssues[index];
       const token = ++zineShowToken;
       document.getElementById('zine-book-kicker').textContent =
-        `Issue #${issue.vol} — ${[issue.kicker, issue.dateLong].filter(Boolean).join(' • ')}`;
+        `Issue #${issue.vol} — ${[issue.kicker, issue.types.join(', '), issue.dateLong].filter(Boolean).join(' • ')}`;
       document.getElementById('zine-book-title').textContent = issue.title;
       document.getElementById('zine-download').href = issue.pdfSrc;
       setZineNav('zine-book', index);
@@ -435,7 +559,7 @@
       }
 
       document.getElementById('zine-modal-kicker').textContent =
-        `Issue #${issue.vol} — ${[issue.kicker, issue.dateLong].filter(Boolean).join(' • ')}`;
+        `Issue #${issue.vol} — ${[issue.kicker, issue.types.join(', '), issue.dateLong].filter(Boolean).join(' • ')}`;
       document.getElementById('zine-modal-title').textContent = issue.title;
 
       const body = document.getElementById('zine-modal-body');
@@ -491,7 +615,7 @@
       else if (e.key === 'ArrowRight') { if (zineBook && !e.shiftKey) zineBook.next(); else stepZine(1); }
     });
 
-    renderZineShelf();
+    const zineShelfDone = renderZineShelf();
 
     // ============================================================
     // PORTFOLIO SHELF: reads PORTFOLIOS from photos.js.
@@ -557,7 +681,12 @@
       }
       draw();
     }
-    renderPortfolioShelf();
+    const portfolioShelfDone = renderPortfolioShelf();
+
+    // The shelves fill in after load and push sections down, so scroll once they have settled.
+    if (window.__arrivalTarget) {
+      Promise.all([zineShelfDone, portfolioShelfDone]).then(() => scrollToSection(window.__arrivalTarget));
+    }
   </script>
 </body>
 </html>

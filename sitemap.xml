@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Add a <url> line here when you add a new photos/ portfolio folder. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://justindoesstuff.com/</loc></url>
+  <url><loc>https://justindoesstuff.com/portfolio.html?p=animal-photography</loc></url>
+  <url><loc>https://justindoesstuff.com/portfolio.html?p=concerts</loc></url>
+  <url><loc>https://justindoesstuff.com/portfolio.html?p=landscapes</loc></url>
+  <url><loc>https://justindoesstuff.com/portfolio.html?p=misc-art</loc></url>
+  <url><loc>https://justindoesstuff.com/portfolio.html?p=portland-meetup</loc></url>
+  <url><loc>https://justindoesstuff.com/portfolio.html?p=portraits</loc></url>
+  <url><loc>https://justindoesstuff.com/portfolio.html?p=self-portraits</loc></url>
+  <url><loc>https://justindoesstuff.com/portfolio.html?p=urban-photos</loc></url>
+</urlset>

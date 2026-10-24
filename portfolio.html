@@ -3,7 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>JDS - Photos</title>
+  <title>Photography Portfolios | Justin Does Stuff</title>
+  <meta name="description" content="Browse photography portfolios by Justin, a Portland, Oregon photographer.">
+  <meta name="robots" content="index, follow, max-image-preview:large">
+  <link rel="canonical" id="canonical" href="https://justindoesstuff.com/portfolio.html">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Justin Does Stuff">
+  <meta property="og:title" id="og-title" content="Photography Portfolios | Justin Does Stuff">
+  <meta property="og:description" id="og-desc" content="Browse photography portfolios by Justin, a Portland, Oregon photographer.">
+  <meta property="og:url" id="og-url" content="https://justindoesstuff.com/portfolio.html">
+  <meta property="og:image" content="https://justindoesstuff.com/og-image.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:image" content="https://justindoesstuff.com/og-image.jpg">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
 
   <script src="https://cdn.tailwindcss.com"></script>
@@ -147,7 +158,14 @@
         document.getElementById('pf-title').textContent = 'Portfolio not found';
         showEmpty('That portfolio is not on the shelf.', 'Pick one from the shelf on the home page.');
       } else {
-        document.title = 'JDS - Photos';
+        document.title = portfolio.title + ' Photography | Justin Does Stuff';
+        const url = 'https://justindoesstuff.com/portfolio.html?p=' + encodeURIComponent(portfolio.id);
+        const desc = (portfolio.blurb ? portfolio.blurb + '. ' : '') + portfolio.title + ' photography portfolio by Justin, Portland, Oregon.';
+        document.querySelector('meta[name="description"]').content = desc;
+        document.getElementById('canonical').href = url;
+        document.getElementById('og-url').content = url;
+        document.getElementById('og-title').content = document.title;
+        document.getElementById('og-desc').content = desc;
         document.getElementById('pf-title').textContent = portfolio.title;
         document.getElementById('pf-blurb').textContent = portfolio.blurb;
         const n = portfolio.photos.length;

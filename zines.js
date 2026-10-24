@@ -37,6 +37,8 @@
                     kicker  the small label above the title
                     date    YYYY-MM (or YYYY-MM-DD)
                     color   spine colour, defaults to a rotating palette
+                    type    what it is about, e.g. Travel. Becomes a filter
+                            button on the shelf. Several: type: Travel, Music
 
    Needs photos.js loaded first (shares its folder-listing helpers).
    ================================================================== */
@@ -73,6 +75,17 @@ function zineDates(value) {
     date: String(month).padStart(2, '0') + '/' + m[1].slice(2),
     dateLong: MONTHS[month - 1] + ' ' + m[1],
   };
+}
+
+/** "Travel, music" -> ['Travel', 'music'] (empty entries dropped, repeats ignored). */
+function parseTypes(value) {
+  const seen = new Set();
+  return String(value || '').split(',').map(t => t.trim()).filter(t => {
+    const key = t.toLowerCase();
+    if (!t || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 /** Markdown -> sanitized HTML, with relative images pointed at the issue folder. */
@@ -136,6 +149,7 @@ async function loadZine(dirName, index) {
     vol: num ? num[1].padStart(2, '0') : String(index + 1).padStart(2, '0'),
     title: meta.title || zineTitleFromFolder(dirName),
     kicker: meta.kicker || 'Journal',
+    types: parseTypes(meta.type || meta.types),
     date: dates.date,
     dateLong: dates.dateLong,
     color: /^#[0-9a-f]{3,8}$/i.test(meta.color || '') ? meta.color : ZINE_COLORS[index % ZINE_COLORS.length],

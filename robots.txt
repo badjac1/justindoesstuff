@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://justindoesstuff.com/sitemap.xml
