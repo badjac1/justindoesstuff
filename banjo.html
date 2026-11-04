@@ -3,7 +3,48 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Banjo Double C Fretboard</title>
+<title>Double C Banjo &amp; DADGAD Guitar Chord Finder and Fretboard | Justin Does Stuff</title>
+<meta name="description" content="Free interactive fretboard and chord finder for Double C banjo (gCGCD) and DADGAD guitar. Find chord shapes, see scales and modes, use a capo, and build chord progressions, with a built-in music theory tutorial.">
+<meta name="keywords" content="Double C banjo chords, DADGAD chords, DADGAD guitar, Double C tuning, gCGCD, banjo chord finder, DADGAD chord chart, learn DADGAD, open tuning chords">
+<link rel="canonical" href="https://justindoesstuff.com/banjo.html">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<meta name="theme-color" content="#3b1f0e">
+<link rel="icon" type="image/svg+xml" href="favicon-fretboard.svg">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Justin Does Stuff">
+<meta property="og:title" content="Double C Banjo &amp; DADGAD Guitar Chord Finder and Fretboard">
+<meta property="og:description" content="Interactive fretboard for Double C banjo and DADGAD guitar: find chords, scales and progressions, and learn the theory behind them.">
+<meta property="og:url" content="https://justindoesstuff.com/banjo.html">
+<meta property="og:image" content="https://justindoesstuff.com/og-image.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Double C Banjo &amp; DADGAD Guitar Chord Finder and Fretboard">
+<meta name="twitter:description" content="Interactive fretboard for Double C banjo and DADGAD guitar: find chords, scales and progressions, and learn the theory behind them.">
+<meta name="twitter:image" content="https://justindoesstuff.com/og-image.jpg">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebApplication",
+      "name": "Dynamic Fretboard and Chord Helper for Double C Banjo and DADGAD Guitar",
+      "url": "https://justindoesstuff.com/banjo.html",
+      "applicationCategory": "MusicApplication",
+      "operatingSystem": "Any (web browser)",
+      "browserRequirements": "Requires JavaScript",
+      "description": "Interactive fretboard and chord finder for Double C banjo (gCGCD) and DADGAD guitar, with scales, modes, capo, a progression builder and a music theory tutorial.",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+      "author": { "@type": "Person", "name": "Justin", "url": "https://justindoesstuff.com/" }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Justin Does Stuff", "item": "https://justindoesstuff.com/" },
+        { "@type": "ListItem", "position": 2, "name": "Fretboard and Chord Helper", "item": "https://justindoesstuff.com/banjo.html" }
+      ]
+    }
+  ]
+}
+</script>
 <style>
   :root {
     --bg: #f6f1e7; --panel: #fffaf0; --ink: #2b2118; --muted: #7a6a58;
@@ -401,11 +442,19 @@
 </details>
 </div>
 
+<section class="card about" style="margin-top:12px" aria-labelledby="aboutH">
+  <h2 id="aboutH">About this fretboard and chord helper</h2>
+  <p>This free tool helps you learn chords on <b>Double C banjo</b> (gCGCD) and <b>DADGAD guitar</b>. Press frets on the fretboard to see the chord name and its notes, or pick a chord and get a list of shapes that work on your tuning. It also shows scales and modes on the neck, handles a capo, suggests chords that go with the one you're playing, and has a step-by-step tutorial on why chords are built the way they are.</p>
+  <p><b>Double C tuning</b> tunes the five banjo strings to g C G C D, so the open strings already sound like a C sus2 chord. It's popular for old-time and clawhammer playing, and the keys of C, G and F fit it well.</p>
+  <p><b>DADGAD tuning</b> tunes the six guitar strings to D A D G A D, so the open strings sound like a Dsus4 chord. It's popular for Celtic, folk and fingerstyle playing, and the keys of D, G and A fit it well.</p>
+  <p class="muted">Switch between the Banjo and Guitar tabs at the top. Made by <a href="index.html" style="color: var(--accent)">Justin Does Stuff</a>.</p>
+</section>
+
 <script>
 // Instruments. Strings are listed in tab order (1st, the highest, on top). midi = open pitch.
 // start = first usable fret (the banjo's 5th string is short: its nut sits at fret 5).
 const INSTRUMENTS = {
-  banjo: { title: "Banjo – Double C tuning (gCGCD)", doc: "Banjo Double C Fretboard", banjo: true, progKey: "banjoProg", styleName: "Banjo style",
+  banjo: { title: "Banjo – Double C tuning (gCGCD)", doc: "Double C Banjo Chord Finder and Fretboard | Justin Does Stuff", banjo: true, progKey: "banjoProg", styleName: "Banjo style",
     tip: "<b>Double C tip:</b> the open strings are G, C, G, C, D, so the keys of C, G and F work especially well on this tuning.",
     strings: [
       { name: "1st", midi: 62, start: 0 },  // D4
@@ -414,7 +463,7 @@ const INSTRUMENTS = {
       { name: "4th", midi: 48, start: 0 },  // C3
       { name: "5th", midi: 67, start: 5, short: true },  // G4, drone
     ] },
-  guitar: { title: "Guitar – DADGAD tuning", doc: "Guitar DADGAD Fretboard", banjo: false, progKey: "guitarProg", styleName: "Open-string style",
+  guitar: { title: "Guitar – DADGAD tuning", doc: "DADGAD Guitar Chord Finder and Fretboard | Justin Does Stuff", banjo: false, progKey: "guitarProg", styleName: "Open-string style",
     tip: "<b>DADGAD tip:</b> the open strings are D, A, D, G, A, D, which already sound like a Dsus4 chord, so the keys of D, G and A work especially well on this tuning.",
     strings: [
       { name: "1st", midi: 62, start: 0 },  // D4
