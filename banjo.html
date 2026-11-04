@@ -227,13 +227,73 @@
   .fgroup h4 { margin: 4px 0 0; font-size: .85rem; color: var(--accent); }
   .fgroup p { margin: 1px 0 4px; }
   .vgroups .voicings { margin-top: 2px; }
+
+  .tabs { display: flex; gap: 4px; margin-bottom: 8px; border-bottom: 1px solid var(--line); }
+  .tabs button { font: inherit; font-weight: 600; padding: 6px 16px; border: 1px solid transparent; border-bottom: 0; border-radius: 8px 8px 0 0;
+    background: transparent; color: var(--muted); cursor: pointer; margin-bottom: -1px; }
+  .tabs button small { font-weight: 400; margin-left: 6px; font-size: .75rem; }
+  .tabs button.on { background: var(--panel); color: var(--ink); border-color: var(--line); border-bottom: 1px solid var(--panel); }
+  .tabs button:not(.on):hover { color: var(--accent); }
+
+  .scalectl { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+  button.note.sc { color: #fff; }
+  button.note.sc-root { background: var(--accent); color: var(--accent-ink); }
+  button.note.sc-third { background: var(--third); }
+  button.note.sc-fifth { background: var(--fifth); }
+  button.note.sc-other { background: color-mix(in srgb, var(--extra) 55%, var(--wood)); }
+  button.note.sc.on { box-shadow: 0 0 0 3px var(--ink); }
+  .scale-legend { margin-top: 8px; font-size: .88rem; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; }
+  .sl { display: inline-block; min-width: 28px; text-align: center; padding: 1px 8px; border-radius: 999px; font-weight: 600; color: #fff; }
+  .sl-root { background: var(--accent); color: var(--accent-ink); } .sl-third { background: var(--third); } .sl-fifth { background: var(--fifth); }
+  .sl-other { background: color-mix(in srgb, var(--extra) 55%, var(--wood)); }
+
+  .lessontabs { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 10px; }
+  .lesson > p:first-child { margin-top: 4px; }
+  .try { font: inherit; font-size: .82rem; padding: 3px 11px; border-radius: 999px; border: 1px solid var(--accent);
+    background: transparent; color: var(--accent); cursor: pointer; margin: 2px 6px 2px 0; text-align: left; }
+  .try:hover { background: var(--accent); color: var(--accent-ink); }
+  .tutorial select { font: inherit; padding: 3px 8px; border-radius: 6px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); }
+  .tutorial table td small { color: var(--muted); }
+  .quizbox { border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; margin-top: 8px; background: var(--wood); }
+  .quizq { font-size: 1.15rem; margin: 0 0 6px; }
+  .quizok { color: var(--fifth); font-weight: 600; }
+  .quizmsg { color: var(--ink); }
+  .tutorial .chip small { font-size: .7rem; color: var(--muted); }
+
+  /* ---- phones and small tablets (placed last so it wins over the layout rules above) ---- */
+  @media (max-width: 820px) {
+    body { padding: 10px 12px; }
+    .top { grid-template-columns: 1fr; gap: 10px; }
+    .summary .big { font-size: 1.4rem; }
+    .controls { gap: 8px 10px; }
+    .controls button, .controls select, .keychip, .chordbtn, .try, .tabs button { min-height: 36px; }
+    .board { -webkit-overflow-scrolling: touch; }
+    .cell.fretnum, .cell.label { font-size: .78rem; }
+    .tutorial table { display: block; overflow-x: auto; }
+    .keychip small, .chordbtn small, .sug small, .sug .tags, .ruler small, .tutorial .chip small { font-size: .72rem; }
+    .card { padding: 10px; }
+    .legend2, .scale-legend { line-height: 1.7; }
+  }
+  @media (max-width: 480px) {
+    h1 { font-size: 1.15rem; }
+    .sub { font-size: .8rem; }
+    .tabs button { padding: 6px 10px; }
+    .tabs button small { display: block; margin: 0; }
+    .scalectl { width: 100%; }
+  }
+  [hidden] { display: none !important; }   /* so display rules on a class never reveal a hidden element */
 </style>
 </head>
 <body>
+<nav class="tabs" role="tablist" aria-label="Instrument">
+  <button role="tab" id="tabBanjo" class="on" aria-selected="true">Banjo <small>Double C · gCGCD</small></button>
+  <button role="tab" id="tabGuitar" aria-selected="false">Guitar <small>DADGAD</small></button>
+</nav>
+
 <div class="top">
   <div>
     <p class="sub"><a href="index.html" style="color: var(--accent)">← Back to Justin Does Stuff</a></p>
-    <h1>Banjo – Double C tuning (gCGCD)</h1>
+    <h1 id="appTitle">Banjo – Double C tuning (gCGCD)</h1>
     <p class="sub">Every string rings open until you press a fret on it. Click a fret to press it (click again to release). Click a string's "open" circle to mute it (✕); click again to unmute.</p>
     <div class="controls">
       <button id="clear">Mute all</button>
@@ -243,18 +303,30 @@
         <select id="capo"><option value="0">none</option><option value="1">fret 1</option><option value="2">fret 2</option><option value="3">fret 3</option><option value="4">fret 4</option><option value="5">fret 5</option><option value="6">fret 6</option><option value="7">fret 7</option><option value="8">fret 8</option><option value="9">fret 9</option><option value="10">fret 10</option><option value="11">fret 11</option><option value="12">fret 12</option></select></label>
       <label title="Retune the 5th (short) string up by the same number of semitones as the capo"><input type="checkbox" id="capo5" checked disabled> Raise 5th string with capo</label>
       <label><input type="checkbox" id="tutor"> Tutorial mode</label>
+      <label title="Light up every fret that fits a key or scale"><input type="checkbox" id="scaleOn"> Show a scale</label>
+      <span id="scaleCtl" class="scalectl" hidden>
+        <select id="scaleRoot" aria-label="Key">
+          <option value="0" selected>C</option><option value="1">C♯/D♭</option><option value="2">D</option><option value="3">D♯/E♭</option>
+          <option value="4">E</option><option value="5">F</option><option value="6">F♯/G♭</option><option value="7">G</option>
+          <option value="8">G♯/A♭</option><option value="9">A</option><option value="10">A♯/B♭</option><option value="11">B</option></select>
+        <select id="scaleMode" aria-label="Scale or mode"></select>
+        <select id="scaleNotes" aria-label="Which notes"><option value="full">Full scale</option><option value="pent">Easy notes only</option><option value="root">Home note only</option></select>
+        <label><input type="checkbox" id="scaleDeg"> Show degrees</label>
+        <button id="scaleMatch" title="Use the key and mode from “What goes with this chord”">Match chord key</button>
+      </span>
+      <button id="resetAll" title="Put the capo, sharps/flats, tutorial, scale and chord finder options back to their defaults">Reset options</button>
     </div>
   </div>
   <div class="card summary">
     <div class="sumrow">
       <span class="big" id="chord">—</span>
-      <span id="notes" class="notes" title="Notes from the 1st to the 5th string"></span>
+      <span id="notes" class="notes" title="Notes from the 1st string downward"></span>
     </div>
     <div class="muted" id="alt"></div>
   </div>
 </div>
 
-<div class="board"><div class="grid" id="grid"></div></div>
+<div class="board"><div class="grid" id="grid"></div><div id="scaleLegend" class="scale-legend" hidden></div></div>
 
 <div class="card tutorial" id="tutorial" hidden></div>
 
@@ -263,7 +335,6 @@
   <summary><h2>Chord finder</h2></summary>
   <div class="split">
   <div class="side">
-  <div class="seg" role="group" aria-label="Chord finder mode"><button id="fSimple" class="on" title="A short list of shapes that sound good">Simple</button><button id="fAdv" title="Every possible shape, with filters">Advanced</button></div>
   <div class="controls">
     <select id="fRoot" aria-label="Root note"></select>
     <select id="fQual" aria-label="Chord type"></select>
@@ -274,7 +345,7 @@
       <select id="fLimit"><option value="10">Fewer</option><option value="20" selected>Standard</option>
         <option value="40">More</option><option value="9999">All</option></select></label>
     <label>Muted strings
-      <select id="fMute"><option value="0">None</option><option value="1" selected>Up to 1</option>
+      <select id="fMute"><option value="0" selected>None</option><option value="1">Up to 1</option>
         <option value="2">Up to 2</option><option value="5">Any</option></select></label>
     <label>Sort
       <select id="fSort"><option value="easy">Easiest first</option><option value="low">Lowest on neck</option>
@@ -287,18 +358,14 @@
         <option value="4">5 frets</option></select></label>
   </div>
   <div class="controls filters">
-    <label><input type="checkbox" id="fNo5"> Don't press the 5th string</label>
+    <label><input type="checkbox" id="fNo5" checked> Don't press the 5th string</label>
     <label><input type="checkbox" id="fBass"> Root must be lowest</label>
+    <label title="Adds shapes where an open string that isn't in the chord still rings as colour"><input type="checkbox" id="fDrone"> Let open strings ring even if off-chord</label>
+    <label title="Shows power chords (root and fifth only)"><input type="checkbox" id="fLoose" checked> Common shapes without the 3rd</label>
+    <label><input type="checkbox" id="fOpen" checked> Open strings</label>
+    <label title="For chords with four or more notes, such as 7ths"><input type="checkbox" id="fOmit5" checked> May leave out the 5th</label>
   </div>
-  <div id="fAdvBox" hidden>
-    <div class="muted">Advanced only:</div>
-    <div class="controls filters">
-      <label><input type="checkbox" id="fDrone" checked> Let open strings ring even if off-chord</label>
-      <label><input type="checkbox" id="fLoose" checked> Common shapes without the 3rd</label>
-      <label><input type="checkbox" id="fOpen" checked> Open strings</label>
-      <label><input type="checkbox" id="fOmit5" checked> May leave out the 5th</label>
-    </div>
-  </div>
+  <div class="controls"><button id="fReset" title="Put every chord finder option back to its default">Reset filters</button></div>
   </div>
   <div class="main">
     <div class="muted" id="fCount"></div>
@@ -335,14 +402,33 @@
 </div>
 
 <script>
-// Strings listed in tab order (1st on top). midi = open pitch. start = first usable fret (5th string is short: its nut sits at fret 5).
-const STRINGS = [
-  { name: "1st", midi: 62, start: 0 },  // D4
-  { name: "2nd", midi: 60, start: 0 },  // C4
-  { name: "3rd", midi: 55, start: 0 },  // G3
-  { name: "4th", midi: 48, start: 0 },  // C3
-  { name: "5th", midi: 67, start: 5, short: true },  // G4, drone
-];
+// Instruments. Strings are listed in tab order (1st, the highest, on top). midi = open pitch.
+// start = first usable fret (the banjo's 5th string is short: its nut sits at fret 5).
+const INSTRUMENTS = {
+  banjo: { title: "Banjo – Double C tuning (gCGCD)", doc: "Banjo Double C Fretboard", banjo: true, progKey: "banjoProg", styleName: "Banjo style",
+    tip: "<b>Double C tip:</b> the open strings are G, C, G, C, D, so the keys of C, G and F work especially well on this tuning.",
+    strings: [
+      { name: "1st", midi: 62, start: 0 },  // D4
+      { name: "2nd", midi: 60, start: 0 },  // C4
+      { name: "3rd", midi: 55, start: 0 },  // G3
+      { name: "4th", midi: 48, start: 0 },  // C3
+      { name: "5th", midi: 67, start: 5, short: true },  // G4, drone
+    ] },
+  guitar: { title: "Guitar – DADGAD tuning", doc: "Guitar DADGAD Fretboard", banjo: false, progKey: "guitarProg", styleName: "Open-string style",
+    tip: "<b>DADGAD tip:</b> the open strings are D, A, D, G, A, D, which already sound like a Dsus4 chord, so the keys of D, G and A work especially well on this tuning.",
+    strings: [
+      { name: "1st", midi: 62, start: 0 },  // D4
+      { name: "2nd", midi: 57, start: 0 },  // A3
+      { name: "3rd", midi: 55, start: 0 },  // G3
+      { name: "4th", midi: 50, start: 0 },  // D3
+      { name: "5th", midi: 45, start: 0 },  // A2
+      { name: "6th", midi: 38, start: 0 },  // D2
+    ] },
+};
+let instId = "banjo";
+try { if (location.hash === "#guitar" || (location.hash !== "#banjo" && localStorage.getItem("instrument") === "guitar")) instId = "guitar"; } catch (e) {}
+const INSTR = () => INSTRUMENTS[instId];
+const STRINGS = INSTRUMENTS[instId].strings.map(x => ({ ...x }));
 const FRETS = 22;
 const MARKS = [3, 5, 7, 10, 12, 15, 17, 19, 22];
 const SHARP = ["C","C♯","D","D♯","E","F","F♯","G","G♯","A","A♯","B"];
@@ -440,7 +526,9 @@ function render() {
   }
   const ana = document.getElementById("tutor").checked ? analyzeSel() : null;
   const tRoot = ana && ana.found.length ? ana.found[0].root : null;
-  const lastBarRow = N >= STRINGS.find(x => x.short).start ? STRINGS.length - 1 : STRINGS.length - 2;
+  const SC = scaleConfig();
+  const shortStr = STRINGS.find(x => x.short);
+  const lastBarRow = shortStr && N < shortStr.start ? STRINGS.length - 2 : STRINGS.length - 1;
   STRINGS.forEach((s, si) => {
     const lab = div("cell label");
     lab.textContent = `${s.name} (${names()[openMidi(s) % 12]})`;
@@ -459,9 +547,12 @@ function render() {
       if (kind === "note") {
         const b = document.createElement("button");
         const muted = f === 0 && sel[si] === "x";
+        const pc = pitch(si, f) % 12, iv = SC ? (pc - SC.tonic + 12) % 12 : -1;
+        const inScale = SC && SC.set.has(iv);
         b.className = "note" + (sel[si] === f ? " on" : "") + (muted ? " xmute" : "") +
+          (inScale && !muted ? " sc sc-" + (iv === 0 ? "root" : iv === 3 || iv === 4 ? "third" : iv === 7 ? "fifth" : "other") : "") +
           (sel[si] === f && tRoot !== null ? " role-" + roleOf((pitch(si, f) - tRoot + 12) % 12) : "");
-        b.textContent = muted ? "✕" : names()[pitch(si, f) % 12];
+        b.textContent = muted ? "✕" : inScale ? (SC.degrees ? DEGREES[iv] : SC.sp[pc]) : names()[pc];
         b.title = noteName(pitch(si, f));
         b.onclick = () => {
           if (f === 0) sel[si] = sel[si] === 0 ? "x" : 0;
@@ -473,6 +564,7 @@ function render() {
       grid.append(cell);
     }
   });
+  renderScaleLegend(SC);
   summarize();
   renderFinder();
   renderTutorial();
@@ -507,6 +599,7 @@ const STANDARD = [
   [10, "Major", [[3,0,3,2]]],
   [11, "Diminished", [[3,0,4,2], [9,0,7,5], [12,0,10,11]]],
 ];
+const chartShapes = () => INSTR().banjo ? STANDARD : [];
 
 function findVoicings(root, ivs) {
   const maxMute = +fv("fMute").value, maxFret = +fv("fMax").value, span = +fv("fSpan").value;
@@ -559,7 +652,7 @@ function findVoicings(root, ivs) {
   // Standard shapes first (they follow the highest-fret and 5th-string filters only).
   const std = [];
   const qName = QUALITIES[finder.q][0];
-  for (const [r, q, shapes] of STANDARD) {
+  for (const [r, q, shapes] of chartShapes()) {
     if ((r + capo.fret) % 12 !== root || q !== qName) continue;
     for (const s of shapes) {
       const frets = [...s, 0];
@@ -593,7 +686,7 @@ function findVoicings(root, ivs) {
 function enumerateShapes(root, tones, need, P) {
   const opts = STRINGS.map((s, si) => {
     const o = ["x"];
-    for (let f = 0; f <= P.maxFret; f++) {
+    for (let f = P.allowOpen === false ? 1 : 0; f <= P.maxFret; f++) {
       if (f > 0 && f <= deadFrets(s)) continue;
       if (s.short && f > 0 && P.no5) continue;
       if (tones.has(pitch(si, f) % 12) || (f === 0 && P.drone)) o.push(f);
@@ -628,11 +721,12 @@ function simpleGroups(root, ivs) {
   const no5 = fv("fNo5").checked, rootBass = fv("fBass").checked;
   const maxMute = +fv("fMute").value, maxFret = +fv("fMax").value, span = +fv("fSpan").value;
   const limit = +fv("fLimit").value;
+  const allowOpen = fv("fOpen").checked, omit5 = fv("fOmit5").checked, loose = fv("fLoose").checked, drone = fv("fDrone").checked;
   const cap = limit >= 9999 ? 999 : limit <= 10 ? 6 : limit <= 20 ? 14 : 28;      // shapes per row
   const tones = new Set(ivs.map(i => (root + i) % 12));
   const fifth = (root + 7) % 12, hasFifth = ivs.includes(7);
   const need = new Set(tones);
-  if (ivs.length > 3 && hasFifth) need.delete(fifth);          // bigger chords may skip the 5th
+  if (ivs.length > 3 && hasFifth && omit5) need.delete(fifth);          // bigger chords may skip the 5th
   const easy = v => v.fingers + v.stretch * 0.5 + v.muted * 1.5 + v.lo * 0.2 + Math.max(0, v.lo - 4) * 0.5 + v.offCount * 0.7 + (v.bassRole === "root" ? 0 : 0.5);
   const order = { easy: (a, b) => easy(a) - easy(b),
     low: (a, b) => a.lo - b.lo || easy(a) - easy(b),
@@ -648,7 +742,7 @@ function simpleGroups(root, ivs) {
     return picked.slice(0, n).sort(order);
   };
   const nm = pc => names()[pc];
-  const base = { maxFret, span, no5, drone: false, minSound: Math.max(3, STRINGS.length - maxMute) };
+  const base = { maxFret, span, no5, allowOpen, drone: false, minSound: Math.max(3, STRINGS.length - maxMute) };
   const okBass = v => !rootBass || v.bassRole === "root";
   const groups = [];
 
@@ -659,7 +753,7 @@ function simpleGroups(root, ivs) {
     blurb: ivs.length === 2 ? "Root and fifth only." : "Every string plays a note from the chord.", items: full.map(v => ({ ...v, note: fullNote })) });
 
   let power = [];
-  if (hasFifth && ivs.length > 2) {
+  if (hasFifth && ivs.length > 2 && loose) {
     const pt = new Set([root, fifth]);
     const powerMute = maxMute >= 1 ? Math.max(maxMute, 2) : 0;
     const powerAll = enumerateShapes(root, pt, pt, { ...base, minSound: Math.max(3, STRINGS.length - powerMute) })
@@ -675,26 +769,30 @@ function simpleGroups(root, ivs) {
   const taken = new Set([...fullAll, ...power].map(v => v.frets.join()));
   const banjo = [];
   const qName = QUALITIES[finder.q][0];
-  for (const [r, q, shapes] of STANDARD) {
+  for (const [r, q, shapes] of (allowOpen ? chartShapes() : [])) {
     if ((r + capo.fret) % 12 !== root || q !== qName) continue;
     for (const s of shapes) {
       const frets = [...s, 0];
       if (Math.max(...frets) > maxFret || taken.has(frets.join())) continue;
       const off = [...new Set(frets.map((f, i) => pitch(i, f) % 12).filter(p => !tones.has(p)))];
       if (clash(off)) continue;                                // skip shapes with a half-step clash (e.g. an open C against a B)
+      const prs = frets.filter(f => f > 0);
+      if (Math.max(...prs) - Math.min(...prs) > span) continue;
+      if (rootBass && Math.min(...frets.map((f, i) => pitch(i, f))) % 12 !== root) continue;
+      if (!loose && ivs.some(i => i === 3 || i === 4) && !frets.some((f, i) => [3, 4].some(t => (pitch(i, f) - root + 12) % 12 === t))) continue;   // no third: hidden unless power-chord shapes are on
       const pressed = frets.filter(f => f > 0);
       banjo.push({ frets, standard: true, lo: Math.min(...pressed, 99), sounding: 5, offPcs: off,
         note: "Standard Double C shape" + (off.length ? `. ${off.map(nm).join(", ")} rings as an extra note` : "") });
       taken.add(frets.join());
     }
   }
-  const droneAll = enumerateShapes(root, tones, need, { ...base, drone: true })
+  const droneAll = !(drone && allowOpen) ? [] : enumerateShapes(root, tones, need, { ...base, drone: true })
     .filter(v => v.offCount === 1 && !clash(v.offPcs) && !taken.has(v.frets.join()) && okBass(v));
   for (const v of diverse(droneAll.slice(), cap)) banjo.push({ ...v, note: `Open ${v.offPcs.map(nm).join(", ")} rings as an extra note` });
-  if (banjo.length) groups.push({ title: "Banjo style", total: banjo.length + Math.max(0, droneAll.length - cap),
-    blurb: "Shapes players really use, where an open string rings along as colour.", items: banjo.slice(0, Math.max(cap, 7)) });
+  if (banjo.length) groups.push({ title: INSTR().styleName, total: banjo.length + Math.max(0, droneAll.length - cap),
+    blurb: INSTR().banjo ? "Shapes players really use, where an open string rings along as colour." : "Shapes where an open string rings along as colour.", items: banjo.slice(0, Math.max(cap, 7)) });
 
-  const stdSet = new Set(STANDARD.filter(([r, q]) => (r + capo.fret) % 12 === root && q === qName).flatMap(([, , sh]) => sh.map(x => [...x, 0].join())));
+  const stdSet = new Set(chartShapes().filter(([r, q]) => (r + capo.fret) % 12 === root && q === qName).flatMap(([, , sh]) => sh.map(x => [...x, 0].join())));
   for (const g of groups) for (const v of g.items) if (stdSet.has(v.frets.join())) v.standard = true;
   return groups;
 }
@@ -737,7 +835,7 @@ function renderFinder() {
   }
   box.className = "voicings";
   fv("fCount").textContent = finder.all.length
-    ? (finder.mode === "simple" ? "No simple shapes for this chord, so here is everything that fits. " : "") +
+    ? "Nothing fit the usual groups, so here is everything that fits. " +
       `Showing ${finder.all.length} of ${finder.total} possible shapes. Click one to show it on the fretboard; hover for details.`
     : "Nothing matches these filters. Try allowing more muted strings or a wider stretch.";
   finder.all.forEach(v => box.append(shapeButton(v)));
@@ -747,25 +845,14 @@ function pickChord(apply) {
   finder.root = +fRoot.value || 0;
   finder.q = +fQual.value;
   finder.groups = null;
-  if (finder.mode === "simple") {
-    const g = simpleGroups(finder.root, QUALITIES[finder.q][1]);
-    if (g.length) { finder.groups = g; finder.all = g.flatMap(x => x.items); }
-  }
+  const g = simpleGroups(finder.root, QUALITIES[finder.q][1]);
+  if (g.length) { finder.groups = g; finder.all = g.flatMap(x => x.items); }
   if (!finder.groups) finder.all = findVoicings(finder.root, QUALITIES[finder.q][1]);
   const best = finder.all.find(v => !v.noThird) || finder.all[0];   // prefer a shape that really contains the third
   if (apply && best) sel.splice(0, sel.length, ...best.frets);
   render();
 }
 
-function setFinderMode(m) {
-  finder.mode = m;
-  fv("fSimple").classList.toggle("on", m === "simple");
-  fv("fAdv").classList.toggle("on", m === "advanced");
-  fv("fAdvBox").hidden = m === "simple";
-  pickChord(false);
-}
-fv("fSimple").onclick = () => setFinderMode("simple");
-fv("fAdv").onclick = () => setFinderMode("advanced");
 
 // ---- "What goes with this chord?" (circle of fifths + chords in a key or mode) ----
 // Circle of fifths, clockwise from the top: each step is a fifth up. Names are the usual key spellings.
@@ -913,7 +1000,7 @@ function renderHelperBody() {
       <p><b>Roman numerals:</b> the number says which note of the key the chord is built on. <b>I</b> is the home chord. <b>IV</b> is built on the 4th note and <b>V</b> on the 5th. Capital letters are major chords and small letters (ii, iii, vi) are minor.</p>
       <p><b>Blues:</b> instead of plain major and minor chords, the blues uses 7th chords (like C7, F7, G7) and a famous 12-bar pattern built from the I, IV and V.</p>
       <p><b>Circle of fifths:</b> the 12 keys arranged so each step clockwise goes up a fifth (C, G, D, A...). Keys next to each other share almost all their notes, which is why neighbours blend well. The inner ring holds each key's relative minor.</p>
-      <p><b>Double C tip:</b> the open strings are G, C, G, C, D, so the keys of C, G and F work especially well on this tuning.</p>
+      <p>${INSTR().tip}</p>
     </details>`;
 
   hv("hBody").querySelectorAll("[data-pc]").forEach(el => el.onclick = () => playChord(+el.dataset.pc, el.dataset.cls));
@@ -981,8 +1068,9 @@ const MINOR_NEXT = {
 
 const prog = { slots: [], keyPick: null };
 let lastPlayed = null;   // { pc, cls, frets } of the chord most recently shown from a suggestion
-try { prog.slots = JSON.parse(localStorage.getItem("banjoProg") || "[]"); } catch (e) { prog.slots = []; }
-const saveProg = () => { try { localStorage.setItem("banjoProg", JSON.stringify(prog.slots)); } catch (e) {} };
+const loadProg = () => { try { prog.slots = JSON.parse(localStorage.getItem(INSTR().progKey) || "[]"); } catch (e) { prog.slots = []; } prog.keyPick = null; };
+loadProg();
+const saveProg = () => { try { localStorage.setItem(INSTR().progKey, JSON.stringify(prog.slots)); } catch (e) {} };
 
 function makeKey(mode, ki) {
   const sp = keySpell(ki);
@@ -1209,39 +1297,47 @@ const EXTRA_INFO = {
   11: ["major 7th", "it adds a dreamy, soft tension and makes the chord “maj7”"],
 };
 
-function renderTutorial() {
-  const box = document.getElementById("tutorial");
-  box.hidden = !document.getElementById("tutor").checked;
-  if (box.hidden) return;
-  const n = pc => `<b>${names()[pc]}</b>`;
-  const step = (title, body) => `<div class="step"><h3>${title}</h3>${body}</div>`;
-  let h = `<h2>Tutorial: why do these notes make this chord?</h2>
-    <p>A chord is a few notes that sit at certain distances from one “home” note, the <b>root</b>. We count the distance in
+// ---- Tutorial mode: a set of short lessons that read what is on the fretboard right now ----
+const ROOT_LABELS = ["C","C♯/D♭","D","D♯/E♭","E","F","F♯/G♭","G","G♯/A♭","A","A♯/B♭","B"];
+const tut = { lesson: "chord", note: 7, scaleRoot: 0, keyRoot: 0, keyMode: "major", progRoot: 0, progMode: "major", quiz: null, msg: "", score: 0, asked: 0 };
+const LESSONS = [["chord", "Your chord"], ["basics", "Fretboard basics"], ["scales", "Scales and keys"], ["triads", "Chords from scales"],
+  ["prog", "Progressions"], ["tuning", "Your tuning"], ["quiz", "Quiz"]];
+
+const nb = pc => `<b>${names()[pc]}</b>`;
+const lstep = (title, body) => `<div class="step"><h3>${title}</h3>${body}</div>`;
+const tryBtn = (label, spec) => `<button class="try" data-try="${spec}">▶ ${label}</button>`;
+const rootSelect = key => `<select data-sel="${key}" data-num="1" aria-label="Root note">${ROOT_LABELS.map((l, i) => `<option value="${i}"${tut[key] === i ? " selected" : ""}>${l}</option>`).join("")}</select>`;
+const fretText = f => f === 0 ? (capo.fret ? "capo" : "open") : String(capo.fret + f);
+const chipsOf = list => list.map(x => `<span class="chip">${x}</span>`).join("");
+
+// ---------- Lesson 1: the chord on the fretboard ----------
+function lessonChord() {
+  let h = `<p>A chord is a few notes that sit at certain distances from one “home” note, the <b>root</b>. We count the distance in
     <b>semitones</b> (one fret = one semitone). The two recipes to remember:</p>
     <p><b>Major</b> = root + <b>4</b> semitones (major third) + <b>7</b> semitones (fifth).<br>
     <b>Minor</b> = root + <b>3</b> semitones (minor third) + <b>7</b> semitones (fifth).</p>
     <p class="legend"><span class="r-root">Root</span><span class="r-third">Third</span><span class="r-fifth">Fifth</span><span class="r-extra">Extra note</span>
     <small class="muted">These colours also appear on the fretboard above.</small></p>`;
   const a = analyzeSel();
-  if (!a) { box.innerHTML = h + "<p>Every string is muted. Click a string's ✕ circle to un-mute it, or press some frets.</p>"; return; }
+  if (!a) return h + "<p>Every string is muted. Click a string's ✕ circle to un-mute it, or press some frets.</p>";
 
-  const order = STRINGS.map((s, si) => sel[si] === "x" ? null : pitch(si, sel[si]) % 12).filter(p => p !== null);
+  const strs = STRINGS.map((s, si) => sel[si] === "x" ? null : { s, f: sel[si], pc: pitch(si, sel[si]) % 12 }).filter(Boolean);
+  const order = strs.map(x => x.pc);
   const dup = a.pcs.filter(p => order.filter(q => q === p).length > 1);
-  h += step("1. What notes are sounding?",
-    `<p>From the 1st to the 5th string you're playing ${order.map(n).join(", ")}. That is ${a.pcs.length} different note name${a.pcs.length === 1 ? "" : "s"}: ${a.pcs.map(n).join(", ")}.` +
-    (dup.length ? ` ${dup.map(n).join(" and ")} ${dup.length === 1 ? "is" : "are"} played more than once. Repeating a note, even in a different octave, doesn't change the chord. Only the different note names count.` : "") + `</p>`);
+  h += lstep("1. What notes are sounding?",
+    `<p>From the 1st string down you're playing ${order.map(nb).join(", ")}. That is ${a.pcs.length} different note name${a.pcs.length === 1 ? "" : "s"}: ${a.pcs.map(nb).join(", ")}.` +
+    (dup.length ? ` ${dup.map(nb).join(" and ")} ${dup.length === 1 ? "is" : "are"} played more than once. Repeating a note, even in a different octave, doesn't change the chord. Only the different note names count.` : "") + `</p>`);
 
   if (a.pcs.length < 3) {
-    h += step("Not a chord yet", `<p>A chord needs at least <b>3 different notes</b>. ${a.pcs.length === 2 ? "Two notes only make an interval, the distance between them (here " + n(a.pcs[0]) + " and " + n(a.pcs[1]) + ")." : "One note is just a note."} Un-mute or press more strings, and the next steps will appear.</p>`);
-    box.innerHTML = h; return;
+    return h + lstep("Not a chord yet", `<p>A chord needs at least <b>3 different notes</b>. ${a.pcs.length === 2 ? "Two notes only make an interval, the distance between them (here " + nb(a.pcs[0]) + " and " + nb(a.pcs[1]) + ")." : "One note is just a note."} Un-mute or press more strings, and the next steps will appear.</p>`);
   }
 
   const best = a.found[0], root = best.root;
   const has = i => a.pcs.some(p => (p - root + 12) % 12 === i);
   const maj = has(4), min = has(3);
-  h += step("2. Find the root",
-    `<p>To name the chord, try each note as the root and see which one makes the others fit the recipe. The best fit here is ${n(root)}.` +
-    (a.bass === root ? ` It's also your lowest note, which makes it sound firmly like a ${n(root)} chord.` : ` Your lowest note is ${n(a.bass)}, not ${n(root)}, so it is written as a slash chord (${best.label}): the same chord with a different note in the bass.`) + `</p>`);
+  h += lstep("2. Find the root",
+    `<p>To name the chord, try each note as the root and see which one makes the others fit the recipe. The best fit here is ${nb(root)}.` +
+    (a.bass === root ? ` It's also your lowest note, which makes it sound firmly like a ${nb(root)} chord.` : ` Your lowest note is ${nb(a.bass)}, not ${nb(root)}, so it is written as a slash chord (${best.label}).`) + `</p>`);
 
   const ruler = Array.from({ length: 12 }, (_, i) => {
     const role = has(i) ? roleOf(i) : null;
@@ -1249,37 +1345,256 @@ function renderTutorial() {
   }).join("");
   const rows = a.pcs.map(p => (p - root + 12) % 12).sort((x, y) => x - y).map(i => {
     const iname = i === 0 ? "root" : i === 3 ? "minor third" : i === 4 ? "major third" : i === 7 ? "perfect fifth" : EXTRA_INFO[i][0];
-    return `<tr><td>${n((root + i) % 12)}</td><td>${i}</td><td>${iname}</td><td>${ROLE_LABEL[roleOf(i)]}</td></tr>`;
+    return `<tr><td>${nb((root + i) % 12)}</td><td>${i}</td><td>${iname}</td><td>${ROLE_LABEL[roleOf(i)]}</td></tr>`;
   }).join("");
-  h += step(`3. Measure each note from ${names()[root]}`,
-    `<p>Starting at ${n(root)} and going up one semitone at a time, the number under each box is the distance. Coloured boxes are notes you're playing:</p>
+  h += lstep(`3. Measure each note from ${names()[root]}`,
+    `<p>Starting at ${nb(root)} and going up one semitone at a time, the number under each box is the distance. Coloured boxes are notes you're playing:</p>
      <div class="ruler">${ruler}</div>
      <table><tr><th>Note</th><th>Semitones above ${names()[root]}</th><th>Interval</th><th>Job</th></tr>${rows}</table>`);
 
+  const strRows = strs.map(x => { const i = (x.pc - root + 12) % 12; return `<tr><td>${x.s.name} string</td><td>${fretText(x.f)}</td><td>${nb(x.pc)}</td><td>${DEGREES[i]}</td><td>${ROLE_LABEL[roleOf(i)]}</td></tr>`; }).join("");
+  h += lstep("4. Which string does which job?",
+    `<p>This is the map from the chord back to your fingers. A “1” is the root, “3” or “♭3” is the third, and “5” is the fifth.</p>
+     <table><tr><th>String</th><th>Fret</th><th>Note</th><th>Degree</th><th>Job</th></tr>${strRows}</table>`);
+
   let thirdTxt;
-  if (maj && !min) thirdTxt = `${n((root + 4) % 12)} is <b>4</b> semitones above ${n(root)}: a <b>major third</b>. A major third gives the bright, happy sound, so this is a <b>${names()[root]} major</b> chord.`;
-  else if (min && !maj) thirdTxt = `${n((root + 3) % 12)} is <b>3</b> semitones above ${n(root)}: a <b>minor third</b>. A minor third gives the darker, sadder sound, so this is a <b>${names()[root]} minor</b> chord.`;
+  if (maj && !min) thirdTxt = `${nb((root + 4) % 12)} is <b>4</b> semitones above ${nb(root)}: a <b>major third</b>. A major third gives the bright, happy sound, so this is a <b>${names()[root]} major</b> chord.`;
+  else if (min && !maj) thirdTxt = `${nb((root + 3) % 12)} is <b>3</b> semitones above ${nb(root)}: a <b>minor third</b>. A minor third gives the darker, sadder sound, so this is a <b>${names()[root]} minor</b> chord.`;
   else if (maj && min) thirdTxt = `You have both a minor third (3) and a major third (4). They clash, so the ear hears it as major with a bluesy ♯9 on top.`;
-  else thirdTxt = `There is no note 3 or 4 semitones above ${n(root)}, so the chord is neither major nor minor. Chords like this (power chords, sus chords) sound open and unfinished. Add ${n((root + 4) % 12)} for major or ${n((root + 3) % 12)} for minor and watch it change.`;
-  h += step("4. The third decides major or minor", `<p>${thirdTxt}</p><p class="muted">Tip: press or release the string carrying the third and watch the name flip between major and minor.</p>`);
+  else thirdTxt = `There is no note 3 or 4 semitones above ${nb(root)}, so the chord is neither major nor minor. Chords like this (power chords, sus chords) sound open and unfinished. Add ${nb((root + 4) % 12)} for major or ${nb((root + 3) % 12)} for minor and watch it change.`;
+  h += lstep("5. The third decides major or minor", `<p>${thirdTxt}</p><p>Try it: ${tryBtn(names()[root] + " major", `play:${root}:M`)}${tryBtn(names()[root] + " minor", `play:${root}:m`)} (each button shows a shape on the fretboard. Watch which note moves.)</p>`);
 
   const fifthTxt = has(7)
-    ? `${n((root + 7) % 12)} is <b>7</b> semitones above ${n(root)}: a <b>perfect fifth</b>. Root plus fifth is the strong, stable skeleton of nearly every chord. The third on top is what adds the colour.`
+    ? `${nb((root + 7) % 12)} is <b>7</b> semitones above ${nb(root)}: a <b>perfect fifth</b>. Root plus fifth is the strong, stable skeleton of nearly every chord, which is why it's called a <b>power chord</b> when played alone. The third on top is what adds the colour.`
     : has(6) ? `The fifth is lowered by a semitone (♭5), which makes the chord tense.`
     : has(8) ? `The fifth is raised by a semitone (♯5), which makes the chord tense and unresolved.`
-    : `There is no fifth (${n((root + 7) % 12)}). That's fine; the ear fills it in, and many banjo chord shapes leave it out.`;
-  h += step("5. The fifth adds stability", `<p>${fifthTxt}</p>`);
+    : `There is no fifth (${nb((root + 7) % 12)}). That's fine; the ear fills it in, and many chord shapes leave it out.`;
+  h += lstep("6. The fifth adds stability", `<p>${fifthTxt}</p>`);
 
   const extras = a.pcs.map(p => (p - root + 12) % 12).filter(i => roleOf(i) === "extra").sort((x, y) => x - y);
-  h += step("6. Extra notes",
-    extras.length ? extras.map(i => `<p>${n((root + i) % 12)} is ${i} semitones above ${n(root)}: the <b>${EXTRA_INFO[i][0]}</b>. It isn't part of the basic triad, but ${EXTRA_INFO[i][1]}.</p>`).join("")
+  h += lstep("7. Extra notes",
+    extras.length ? extras.map(i => `<p>${nb((root + i) % 12)} is ${i} semitones above ${nb(root)}: the <b>${EXTRA_INFO[i][0]}</b>. It isn't part of the basic triad, but ${EXTRA_INFO[i][1]}.</p>`).join("")
     : `<p>No extra notes. You're playing a pure triad: root, third and fifth only.</p>`);
 
+  const bassI = (a.bass - root + 12) % 12, br = roleOf(bassI);
+  const invTxt = br === "root" ? `Your lowest note is the root, ${nb(root)}. This is called <b>root position</b>: the most solid, grounded sound.`
+    : br === "third" ? `Your lowest note is the third, ${nb(a.bass)}, not the root. This is a <b>first inversion</b>, written ${best.label}. It's the same chord, but it feels lighter and floats toward the next chord.`
+    : br === "fifth" ? `Your lowest note is the fifth, ${nb(a.bass)}. This is a <b>second inversion</b>, written ${best.label}. It sounds a little unsettled, and players often use it on the way to another chord.`
+    : `Your lowest note, ${nb(a.bass)}, is an extra note rather than part of the basic triad, so the whole chord is coloured from underneath.`;
+  h += lstep("8. Which note is lowest?", `<p>${invTxt}</p>`);
+
   const triad = maj && !min ? `${names()[root]} major` : min && !maj ? `${names()[root]} minor` : `${names()[root]}`;
-  h += step("7. Putting it together",
-    `<p>Root ${n(root)}${maj && !min ? ` + major third ${n((root + 4) % 12)}` : min && !maj ? ` + minor third ${n((root + 3) % 12)}` : ""}${has(7) ? ` + fifth ${n((root + 7) % 12)}` : ""} = <b>${triad}</b>` +
-    (extras.length ? `, with ${extras.map(i => n((root + i) % 12)).join(" and ")} adding colour` : "") + `. The full name is <b>${best.label}</b>.</p>`);
-  box.innerHTML = h;
+  const colours = [["Major", "Major"], ["Minor", "Minor"], ["Sus2", "Sus2"], ["Sus4", "Sus4"], ["7", "7"], ["Major 7", "Major 7"], ["Minor 7", "Minor 7"], ["Add9", "Add9"]];
+  h += lstep("9. Putting it together",
+    `<p>Root ${nb(root)}${maj && !min ? ` + major third ${nb((root + 4) % 12)}` : min && !maj ? ` + minor third ${nb((root + 3) % 12)}` : ""}${has(7) ? ` + fifth ${nb((root + 7) % 12)}` : ""} = <b>${triad}</b>` +
+    (extras.length ? `, with ${extras.map(i => nb((root + i) % 12)).join(" and ")} adding colour` : "") + `. The full name is <b>${best.label}</b>.</p>
+    <p>Try changing the colour of ${nb(root)} and watch which note moves:<br>${colours.map(([l, q]) => tryBtn(names()[root] + " " + l.toLowerCase(), `quality:${root}:${q}`)).join("")}</p>`);
+  return h;
+}
+
+// ---------- Lesson 2: fretboard basics ----------
+function lessonBasics() {
+  const I = INSTR();
+  const base = STRINGS.map(s => s.midi);
+  const physical = (s, a) => a === 0 ? s.midi : s.short ? (a > s.start ? s.midi + a - s.start : null) : s.midi + a;   // note at neck fret a, ignoring any capo
+  const cycle = Array.from({ length: 12 }, (_, i) => `<div>${names()[i]}<small>${i}</small></div>`).join("");
+  const openRows = STRINGS.map((s, i) => {
+    const next = STRINGS[i + 1];
+    const rel = !next ? "" : s.short || next.short ? "the short drone string sits apart from the others"
+      : `${Math.abs(s.midi - next.midi)} semitones ${s.midi > next.midi ? "above" : "below"} the ${next.name}`;
+    return `<tr><td>${s.name}</td><td>${nb(openMidi(s) % 12)}</td><td>${rel}</td></tr>`;
+  }).join("");
+  const first = STRINGS[0];
+  const ladder = [0, 1, 2, 3, 4, 5, 12].map(a => `<span class="chip">${names()[(first.midi + a) % 12]}<small> ${a === 0 ? "open" : "fret " + a}</small></span>`).join("");
+  const target = tut.note;
+  const where = STRINGS.map(s => {
+    const frets = [];
+    for (let a = 0; a <= FRETS; a++) { const m = physical(s, a); if (m !== null && m % 12 === target) frets.push(a === 0 ? "open" : a); }
+    return `<tr><td>${s.name}</td><td>${frets.length ? frets.join(", ") : "(none)"}</td></tr>`;
+  }).join("");
+  return `<p>Everything else in the app is built on a few simple facts about how the neck is laid out.</p>` +
+    lstep("1. Twelve notes, one fret apart", `<p>Music has only <b>12 different notes</b>. They repeat over and over, and the distance from one to the next is a <b>semitone</b>, which is exactly one fret.</p>
+      <div class="ruler">${cycle}</div>
+      <p>After the 12th note you land on the first again, only higher. That is an <b>octave</b>. Most notes have a sharp (♯) in between, but <b>E to F</b> and <b>B to C</b> have nothing between them, which is why only 7 of the 12 gaps are “whole steps”.</p>`) +
+    lstep(`2. Your open strings (${I.banjo ? "banjo, Double C" : "guitar, DADGAD"})`, `<table><tr><th>String</th><th>Open note</th><th>Compared to the next string</th></tr>${openRows}</table>
+      <p>Each string is a different starting note. Press a fret and that string's note goes up by one semitone per fret.</p>`) +
+    lstep("3. One fret is one semitone", `<p>On the 1st string, starting from open and moving up fret by fret you get:</p><p>${ladder}</p>
+      <p>Notice that fret 12 gives the same note as open. That's the octave: the neck repeats itself every 12 frets, which is also why the fret markers have a double dot at 12.</p>`) +
+    lstep("4. Find any note", `<p>The same note lives in several places. Pick a note: ${rootSelect("note")}</p>
+      <table><tr><th>String</th><th>Frets with ${nb(target)} (no capo)</th></tr>${where}</table>
+      <p>${tryBtn("Light up every " + ROOT_LABELS[target] + " on the fretboard", `scale:${target}:major:root`)}</p>`) +
+    lstep("5. Sharps and flats", `<p>One black-key note has two names: ${nb(1)} and D♭ are the same pitch. Which one is used depends on the key, so use whichever the song calls for.
+      ${tryBtn("Switch between sharps and flats", "flats")}</p>`) +
+    lstep("6. The capo", `<p>A capo clamps across the neck and acts like a new nut: every open string now sounds at the capo's fret, so <b>every note moves up by that many semitones</b> and shapes keep their form. That lets you play the same easy shapes in a higher key.</p>
+      <p>${tryBtn("Capo at fret 2", "capo:2")}${tryBtn("Capo at fret 5", "capo:5")}${tryBtn("Remove capo", "capo:0")}</p>`);
+}
+
+// ---------- Lesson 3: scales and keys ----------
+function lessonScales() {
+  const tonic = tut.scaleRoot;
+  const stepsOf = s => s.map((x, i) => (i < s.length - 1 ? s[i + 1] : 12) - x).map(d => d === 2 ? "W" : d === 1 ? "H" : d).join(" ");
+  const scaleLine = modeId => {
+    const m = MODES[modeId], k = viewKey(modeId, tonic);
+    return `<p><b>${k.label}</b>: ${chipsOf(m.scale.map(o => k.sp[(tonic + o) % 12]))}<br><span class="muted">steps: ${stepsOf(m.scale)}</span> ${tryBtn("show on fretboard", `scale:${tonic}:${modeId}:full`)}</p>`;
+  };
+  const relMinor = viewKey("minor", (tonic + 9) % 12);
+  const modeIds = ["mixolydian", "dorian", "phrygian", "lydian", "locrian"];
+  return `<p>A <b>key</b> is a family of notes that sound good together. A <b>scale</b> is those notes lined up from low to high. Turn on “Show a scale” (top of the page) to see any scale on the fretboard, or use the buttons here.</p>` +
+    lstep("1. Pick a home note", `<p>Home note: ${rootSelect("scaleRoot")}</p>`) +
+    lstep("2. Major and minor scales", `<p>Scales are built from steps: <b>W</b> = whole step (2 frets) and <b>H</b> = half step (1 fret). The recipes:</p>
+      ${scaleLine("major")}${scaleLine("minor")}
+      <p>Major is <b>W W H W W W H</b>. Natural minor is <b>W H W W H W W</b>. The different pattern is what makes one sound happy and the other sad.</p>`) +
+    lstep("3. Relative major and minor", `<p>${viewKey("major", tonic).label} and ${relMinor.label} use <b>exactly the same notes</b>. The minor scale just starts three semitones lower, on the 6th note of the major scale. Songs in one often borrow chords from the other, which is why the circle of fifths puts them together.</p>`) +
+    lstep("4. Modes: same notes, different home", `<p>Start the same set of notes on a different note and you get a <b>mode</b>, each with its own mood. Home note ${nb(tonic)}:</p>
+      ${modeIds.map(id => { const m = MODES[id], k = viewKey(id, tonic); return `<p><b>${k.label}</b>: ${m.blurb} ${tryBtn("show it", `scale:${tonic}:${id}:full`)}</p>`; }).join("")}`) +
+    lstep("5. Easy notes (pentatonic) and the blues", `<p>If you just want notes that are hard to get wrong, use the <b>pentatonic</b> scale: only 5 notes, with the awkward ones removed. Pick “Easy notes only” in the scale options.
+      The <b>blues scale</b> adds one extra “blue note” for that classic bent, bluesy sound.</p>
+      <p>${tryBtn(ROOT_LABELS[tonic] + " minor, easy notes", `scale:${tonic}:minor:pent`)}${tryBtn(ROOT_LABELS[tonic] + " minor blues", `scale:${tonic}:bluesm:full`)}${tryBtn("Hide the scale", "scaleOff")}</p>`);
+}
+
+// ---------- Lesson 4: chords from scales ----------
+function lessonTriads() {
+  const tonic = tut.keyRoot, modeId = tut.keyMode, m = MODES[modeId], k = viewKey(modeId, tonic), s = m.scale;
+  const rows = k.chords.map((c, i) => {
+    const r = (tonic + s[i]) % 12, t = (tonic + s[(i + 2) % 7]) % 12, f = (tonic + s[(i + 4) % 7]) % 12;
+    const third = (t - r + 12) % 12, fifth = (f - r + 12) % 12;
+    const why = third === 4 && fifth === 7 ? "4 + 3 = major" : third === 3 && fifth === 7 ? "3 + 4 = minor" : third === 3 && fifth === 6 ? "3 + 3 = diminished" : "";
+    return `<tr><td>${c.roman}</td><td>${tryBtn(c.name, `play:${c.pc}:${c.cls}`)}</td><td>${[r, t, f].map(p => k.sp[p]).join(" ")}</td><td>${why}</td></tr>`;
+  }).join("");
+  return `<p>Chords aren't random. Almost every chord in a key comes from one trick: <b>stack every other note of the scale</b>. Take a note, skip one, take the next, skip one, take the next. That gives root, third and fifth.</p>` +
+    lstep("1. Pick a key", `<p>Home note: ${rootSelect("keyRoot")}
+      <select data-sel="keyMode"><option value="major"${modeId === "major" ? " selected" : ""}>Major</option><option value="minor"${modeId === "minor" ? " selected" : ""}>Minor</option></select></p>`) +
+    lstep(`2. The seven chords of ${k.label}`, `<table><tr><th>Numeral</th><th>Chord (click to see it)</th><th>Notes (1 3 5)</th><th>Why that quality?</th></tr>${rows}</table>
+      <p>The two numbers are the semitones between the stacked notes. <b>4 then 3</b> makes a major chord, <b>3 then 4</b> makes a minor chord, and <b>3 then 3</b> makes the tense, diminished chord. You don't pick major or minor: the scale decides it for you.</p>`) +
+    lstep("3. Capital and small numerals", `<p>That's why the numerals look the way they do: <b>I, IV, V</b> in capitals are major, <b>ii, iii, vi</b> in lower case are minor, and the <b>°</b> marks diminished. In a minor key the pattern shifts, so <b>i, iv, v</b> become minor and <b>III, VI, VII</b> become major.</p>`);
+}
+
+// ---------- Lesson 5: progressions ----------
+function lessonProg() {
+  const tonic = tut.progRoot, modeId = tut.progMode, m = MODES[modeId], k = viewKey(modeId, tonic);
+  const loaders = m.progs.slice(0, 4).map(idxs => tryBtn(`${idxs.map(i => k.chords[i].roman).join(" – ")}  (${idxs.map(i => k.chords[i].name).join(" ")})`, `load:${modeId}:${tonic}:${idxs.join(",")}`)).join("<br>");
+  return `<p>A <b>progression</b> is a chain of chords. Good ones feel like a little story: you leave home, wander, and come back.</p>` +
+    lstep("1. Tension and release", `<p>Every chord in a key has a job:</p>
+      <p><b>Home (I, or i in minor):</b> rest, finished.<br><b>Away (IV, ii, VI):</b> movement, gentle lift.<br><b>Tension (V, vii°):</b> unfinished, wants to go home.</p>
+      <p>The strongest move in music is <b>V → I</b>: the tense chord resolving home. Most songs are built from stretching or dressing up that idea.</p>`) +
+    lstep("2. The circle of fifths", `<p>Chords a fifth apart are strong neighbours. In the “What goes with this chord?” panel, the lit circles around your home chord are the ones that belong together. A step to the left is the <b>IV</b>, a step to the right is the <b>V</b>, and the inner ring holds their minor cousins.</p>`) +
+    lstep("3. Famous patterns", `<p><b>I – IV – V</b>: the folk, blues and country backbone.<br><b>I – V – vi – IV</b>: the pop progression, found in hundreds of songs.<br><b>ii – V – I</b>: the jazz way home.<br><b>i – VI – III – VII</b>: a classic minor-key loop.</p>`) +
+    lstep("4. Try one on your fretboard", `<p>Key: ${rootSelect("progRoot")}
+      <select data-sel="progMode"><option value="major"${modeId === "major" ? " selected" : ""}>Major</option><option value="minor"${modeId === "minor" ? " selected" : ""}>Minor</option></select></p>
+      <p class="muted">Pressing one loads real shapes into the Progression builder (replacing what's there), so you can see them, tweak them and get suggestions for what comes next.</p>
+      <p>${loaders}</p>`) +
+    lstep("5. Keep going", `<p>In the Progression builder, add chords one at a time. It guesses your key, tells you the numeral for your last chord and suggests what could come next, from the safe moves to the surprising ones.</p>`);
+}
+
+// ---------- Lesson 6: your tuning ----------
+function lessonTuning() {
+  const I = INSTR();
+  const pcs = [...new Set(STRINGS.map(s => openMidi(s) % 12))];
+  const lowest = STRINGS.reduce((a, b) => openMidi(b) < openMidi(a) ? b : a);
+  const open = rankRoots(pcs, openMidi(lowest) % 12)[0];
+  const strList = STRINGS.map(s => `${s.name}: ${nb(openMidi(s) % 12)}`).join(" · ");
+  const common = `<p>Open strings, all together: ${strList}</p>
+    <p>The notes in that chord are ${pcs.map(nb).join(", ")}, which most closely reads as <b>${open.label}</b>. ${open.intervals ? `Measured from ${names()[open.root]}, the intervals are <b>${open.intervals}</b>.` : ""}</p>`;
+  if (I.banjo) return `<p>A tuning decides which chords are easy. A different tuning means different shapes for the same chords.</p>` +
+    lstep("1. How Double C is tuned", `<p>Standard (open G) banjo tuning is g D G B D. Double C changes just two strings: the <b>4th</b> goes down a whole step from D to C, and the <b>2nd</b> goes up a half step from B to C. Now C appears twice, which is where the name comes from.</p>${common}`) +
+    lstep("2. Why it is so easy to play", `<p>The open strings are C, G and D, with no third (E or E♭). That means they spell a <b>sus2 chord</b>: neither major nor minor. You can strum them as they are, and one finger decides the mood: fret the 1st string at the 2nd fret for <b>E</b> and you've made C major, or at the 1st fret for <b>E♭</b> and you've made C minor.</p>
+      <p>${tryBtn("Show the open strings", "open")}</p>`) +
+    lstep("3. The short drone string", `<p>The 5th string is shorter and begins at the 5th fret, so it only gives one high G (the drone) that rings under the melody. Most chords just leave it open. With a capo, you can raise it with the capo or leave it alone: see the capo options at the top.</p>`) +
+    lstep("4. Keys that suit it", `<p>Open C and G strings fit the keys of <b>C, G and F</b> best. Use the capo to move those shapes to other keys.</p>`);
+  return `<p>A tuning decides which chords are easy. A different tuning means different shapes for the same chords.</p>` +
+    lstep("1. How DADGAD is tuned", `<p>Standard guitar tuning is E A D G B E. DADGAD lowers three strings by a whole step: the <b>6th</b> and <b>1st</b> go from E to D, and the <b>2nd</b> from B to A. The result is D A D G A D.</p>${common}`) +
+    lstep("2. Why it sounds so open", `<p>The open strings spell D, G and A: a <b>Dsus4</b> chord. There is no third (no F♯ or F), so the open strings sound neither major nor minor. That open, modal quality is why DADGAD is popular for Celtic and folk music.</p>
+      <p>One finger changes the mood: the 4th string at fret 4 is <b>F♯</b> (major) and at fret 3 is <b>F</b> (minor).</p>
+      <p>${tryBtn("Show the open strings", "open")}</p>`) +
+    lstep("3. Keys that suit it", `<p>Open D, G and A strings fit the keys of <b>D, G and A</b> best. Use the capo to move those shapes to other keys.</p>`);
+}
+
+// ---------- Lesson 7: quiz ----------
+function newQuestion() {
+  const root = Math.floor(Math.random() * 12), cls = Math.random() < 0.5 ? "M" : "m";
+  const sp = viewKey(cls === "m" ? "minor" : "major", root).sp;    // spell the notes the way that key is written
+  tut.quiz = { root, cls, sp, name: sp[root] + (cls === "m" ? "m" : ""), pretty: sp[root] + (cls === "m" ? " minor" : " major") };
+  tut.msg = "";
+}
+function quizCheck() {
+  const q = tut.quiz;
+  const a = analyzeSel();
+  if (!q) return;
+  tut.asked++;
+  if (!a) { tut.msg = "Every string is muted. Un-mute a few and build the chord."; tut.asked--; return; }
+  const need = triadPcs(q.root, q.cls), jobs = ["root", "third", "fifth"];
+  const missing = need.map((p, i) => ({ p, job: jobs[i] })).filter(x => !a.pcs.includes(x.p));
+  const extra = a.pcs.filter(p => !need.includes(p));
+  if (!missing.length && !extra.length) { tut.score++; tut.msg = `✓ Correct! You have ${need.map(p => q.sp[p]).join(", ")}: root, third and fifth of ${q.pretty}. Press “Next question” for another.`; return; }
+  const parts = [];
+  if (missing.length) parts.push("Missing " + missing.map(x => `the ${x.job} (${q.sp[x.p]})`).join(" and "));
+  if (extra.length) parts.push(`${extra.map(p => q.sp[p]).join(", ")} ${extra.length > 1 ? "aren't" : "isn't"} part of ${q.pretty}. Open strings count too, so click an open circle to mute it`);
+  tut.msg = "Not quite yet. " + parts.join(". ") + ".";
+}
+function lessonQuiz() {
+  if (!tut.quiz) newQuestion();
+  const q = tut.quiz, need = triadPcs(q.root, q.cls);
+  const ok = tut.msg.startsWith("✓");
+  return `<p>Time to practise. I'll name a chord and you build it on the fretboard. Any shape counts as long as every sounding string plays the root, the third or the fifth. Muted strings are fine.</p>
+    <div class="quizbox">
+      <p class="quizq">Build a <b>${q.pretty}</b> chord.</p>
+      <p>${tryBtn("Check my answer", "quizCheck")}${tryBtn("Hint", "quizHint")}${tryBtn("Show me one", "quizShow")}${tryBtn("Next question", "quizNew")}</p>
+      ${tut.msg ? `<p class="${ok ? "quizok" : "quizmsg"}">${tut.msg}</p>` : ""}
+      <p class="muted">Score: ${tut.score} correct out of ${tut.asked} tries.</p>
+    </div>`;
+}
+
+const TUT_RENDER = { chord: lessonChord, basics: lessonBasics, scales: lessonScales, triads: lessonTriads, prog: lessonProg, tuning: lessonTuning, quiz: lessonQuiz };
+
+function runTry(spec) {
+  const [kind, ...p] = spec.split(":");
+  const showBoard = () => document.querySelector(".board").scrollIntoView({ behavior: "smooth", block: "nearest" });
+  if (kind === "capo") { fv("capo").value = p[0]; capoChanged(); showBoard(); }
+  else if (kind === "scale") {
+    fv("scaleOn").checked = true; fv("scaleCtl").hidden = false;
+    fv("scaleRoot").value = p[0]; fv("scaleMode").value = p[1]; fv("scaleNotes").value = p[2]; fv("scaleDeg").checked = false;
+    render(); showBoard();
+  }
+  else if (kind === "scaleOff") { fv("scaleOn").checked = false; fv("scaleCtl").hidden = true; render(); }
+  else if (kind === "play") { playChord(+p[0], p[1]); showBoard(); }
+  else if (kind === "quality") {
+    fRoot.value = p[0]; fQual.value = String(QUALITIES.findIndex(q => q[0] === p[1]));
+    helper.skip = true; pickChord(true); showBoard();
+  }
+  else if (kind === "flats") { fv("flats").checked = !fv("flats").checked; fv("flats").dispatchEvent(new Event("change")); }
+  else if (kind === "open") { fv("openAll").click(); showBoard(); }
+  else if (kind === "load") {
+    const [modeId, tonic, idxs] = p;
+    const k = viewKey(modeId, +tonic);
+    prog.slots = [];
+    for (const i of idxs.split(",").map(Number)) {
+      const c = k.chords[i];
+      playChord(c.pc, c.cls);
+      const slot = currentChordForSlot();
+      if (slot) prog.slots.push(slot);
+    }
+    prog.keyPick = null; saveProg(); renderProg();
+    const d = document.querySelector("details.prog"); d.open = true; d.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+  else if (kind === "quizNew") { newQuestion(); renderTutorial(); }
+  else if (kind === "quizCheck") { quizCheck(); renderTutorial(); }
+  else if (kind === "quizHint") {
+    const q = tut.quiz, need = triadPcs(q.root, q.cls);
+    tut.msg = `Hint: ${q.pretty} is made of ${need.map(p => q.sp[p]).join(", ")} (root, ${q.cls === "m" ? "minor" : "major"} third, fifth). Use only those notes.`;
+    renderTutorial();
+  }
+  else if (kind === "quizShow") { playChord(tut.quiz.root, tut.quiz.cls); tut.msg = "Here's one shape. Can you find another?"; renderTutorial(); }
+}
+
+function renderTutorial() {
+  const box = document.getElementById("tutorial");
+  box.hidden = !document.getElementById("tutor").checked;
+  if (box.hidden) return;
+  const tabs = LESSONS.map(([id, label]) => `<button class="keychip${tut.lesson === id ? " on" : ""}" data-lesson="${id}">${label}</button>`).join("");
+  box.innerHTML = `<h2>Tutorial</h2><div class="lessontabs">${tabs}</div><div class="lesson">${TUT_RENDER[tut.lesson]()}</div>`;
+  box.querySelectorAll("[data-lesson]").forEach(el => el.onclick = () => { tut.lesson = el.dataset.lesson; renderTutorial(); });
+  box.querySelectorAll("[data-try]").forEach(el => el.onclick = () => runTry(el.dataset.try));
+  box.querySelectorAll("[data-sel]").forEach(el => el.onchange = () => { tut[el.dataset.sel] = el.dataset.num ? +el.value : el.value; renderTutorial(); });
 }
 
 function summarize() {
@@ -1334,6 +1649,84 @@ function capoChanged() {
 }
 document.getElementById("capo").onchange = capoChanged;
 document.getElementById("capo5").onchange = capoChanged;
+function applyInstrumentUI() {
+  const I = INSTR();
+  fv("appTitle").textContent = I.title;
+  document.title = I.doc;
+  for (const [id, tab] of [["banjo", "tabBanjo"], ["guitar", "tabGuitar"]]) {
+    fv(tab).classList.toggle("on", instId === id);
+    fv(tab).setAttribute("aria-selected", instId === id ? "true" : "false");
+  }
+  fv("capo5").parentElement.style.display = I.banjo ? "" : "none";     // the short 5th string is banjo-only
+  fv("fNo5").parentElement.style.display = I.banjo ? "" : "none";
+  applyFilterDefaults();
+}
+function setInstrument(id) {
+  if (id === instId) return;
+  instId = id;
+  STRINGS.length = 0;
+  STRINGS.push(...INSTRUMENTS[id].strings.map(x => ({ ...x })));
+  sel.length = 0;
+  sel.push(...STRINGS.map(() => 0));
+  lastPlayed = null;
+  loadProg();
+  try { localStorage.setItem("instrument", id); } catch (e) {}
+  try { history.replaceState(null, "", "#" + id); } catch (e) {}
+  applyInstrumentUI();
+  pickChord(false);
+}
+fv("tabBanjo").onclick = () => setInstrument("banjo");
+fv("tabGuitar").onclick = () => setInstrument("guitar");
+applyInstrumentUI();
+// ---- Scale overlay: light up every fret that belongs to a key or scale ----
+function scaleConfig() {
+  if (!fv("scaleOn").checked) return null;
+  const modeId = fv("scaleMode").value, tonic = +fv("scaleRoot").value, m = MODES[modeId];
+  return { tonic, m, modeId, sp: viewKey(modeId, tonic).sp, degrees: fv("scaleDeg").checked,
+    set: new Set(fv("scaleNotes").value === "pent" ? m.pent : fv("scaleNotes").value === "root" ? [0] : m.scale) };
+}
+function renderScaleLegend(SC) {
+  const box = fv("scaleLegend");
+  box.hidden = !SC;
+  if (!SC) return;
+  const key = viewKey(SC.modeId, SC.tonic);
+  const cls = iv => iv === 0 ? "root" : iv === 3 || iv === 4 ? "third" : iv === 7 ? "fifth" : "other";
+  const offs = [...SC.set].sort((a, b) => a - b);
+  box.innerHTML = `<b>${key.label}</b> ${{ pent: "(easy notes)", root: "(home note only)" }[fv("scaleNotes").value] || ""}: ` +
+    offs.map(o => `<span class="sl sl-${cls(o)}">${SC.degrees ? DEGREES[o] : key.sp[(SC.tonic + o) % 12]}</span>`).join("") +
+    `<span class="muted"> Lit frets belong to the scale. Orange is the home note, blue the third, green the fifth.</span>`;
+}
+fv("scaleMode").innerHTML = Object.entries(MODES).map(([id, m]) => `<option value="${id}">${m.label}</option>`).join("");
+fv("scaleMode").value = "major";
+fv("scaleOn").onchange = () => { fv("scaleCtl").hidden = !fv("scaleOn").checked; render(); };
+["scaleRoot", "scaleMode", "scaleNotes", "scaleDeg"].forEach(id => fv(id).onchange = render);
+fv("scaleMatch").onclick = () => {
+  const tonic = helper.key !== null ? helper.key : helper.root;
+  const mode = helper.key !== null ? helper.mode : (helper.cls === "m" ? "minor" : "major");
+  fv("scaleRoot").value = String(tonic);
+  fv("scaleMode").value = mode;
+  render();
+};
+// ---- Defaults ----
+function applyFilterDefaults() {
+  const banjo = INSTR().banjo;
+  fv("fLimit").value = "20"; fv("fMute").value = banjo ? "0" : "2"; fv("fSort").value = "easy";
+  fv("fMax").value = "12"; fv("fSpan").value = "2";
+  fv("fNo5").checked = banjo; fv("fBass").checked = false; fv("fDrone").checked = false;
+  fv("fLoose").checked = true; fv("fOpen").checked = true; fv("fOmit5").checked = true;
+}
+function resetOptions(onlyFinder) {
+  applyFilterDefaults();
+  if (onlyFinder) { pickChord(false); return; }
+  flats = false; fv("flats").checked = false;
+  fv("capo").value = "0"; fv("capo5").checked = true;
+  fv("tutor").checked = false;
+  fv("scaleOn").checked = false; fv("scaleCtl").hidden = true;
+  fv("scaleRoot").value = "0"; fv("scaleMode").value = "major"; fv("scaleNotes").value = "full"; fv("scaleDeg").checked = false;
+  capoChanged();      // applies the capo and refreshes everything
+}
+fv("fReset").onclick = () => resetOptions(true);
+fv("resetAll").onclick = () => resetOptions(false);
 pickChord(false);
 </script>
 </body>
