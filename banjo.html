@@ -323,6 +323,19 @@
     .scalectl { width: 100%; }
   }
   [hidden] { display: none !important; }   /* so display rules on a class never reveal a hidden element */
+
+  button.note.sc-extra { background: var(--extra); }
+  button.note.sc-common { outline: 2px solid #f2c94c; outline-offset: 1px; }
+  .sl-extra { background: var(--extra); }
+  .scale-legend { display: block; }
+  .sl-row { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; margin-top: 4px; }
+  .sl-row.warn { color: var(--capo); }
+  .sl-help { margin-top: 10px; padding: 10px 14px; border-radius: 10px; background: var(--wood); }
+  .sl-help h4 { margin: 0 0 4px; font-size: .95rem; color: var(--accent); }
+  .sl-help p { margin: 4px 0; }
+  .sl-help ul { margin: 4px 0 0; padding-left: 20px; }
+  .sl-help li { margin: 3px 0; }
+  .progin input { font: inherit; padding: 4px 8px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); width: 9em; }
 </style>
 </head>
 <body>
@@ -354,6 +367,10 @@
         <select id="scaleNotes" aria-label="Which notes"><option value="full">Full scale</option><option value="pent">Easy notes only</option><option value="root">Home note only</option></select>
         <label><input type="checkbox" id="scaleDeg"> Show degrees</label>
         <button id="scaleMatch" title="Use the key and mode from “What goes with this chord”">Match chord key</button>
+        <label class="progin" title="Type the chords of your song, like G D or Am F C G">Song chords
+          <input type="text" id="scaleProg" placeholder="e.g. G D" size="14" autocomplete="off" spellcheck="false"></label>
+        <button id="scaleProgFrom" title="Copy the chords from the Progression builder">Use builder chords</button>
+        <label id="scaleViewWrap" hidden>Show <select id="scaleView"></select></label>
       </span>
       <button id="resetAll" title="Put the capo, sharps/flats, tutorial, scale and chord finder options back to their defaults">Reset options</button>
     </div>
@@ -597,11 +614,11 @@ function render() {
         const b = document.createElement("button");
         const muted = f === 0 && sel[si] === "x";
         const pc = pitch(si, f) % 12, iv = SC ? (pc - SC.tonic + 12) % 12 : -1;
-        const inScale = SC && SC.set.has(iv);
+        const scRole = SC && !muted ? scaleRole(SC, pc) : null;
         b.className = "note" + (sel[si] === f ? " on" : "") + (muted ? " xmute" : "") +
-          (inScale && !muted ? " sc sc-" + (iv === 0 ? "root" : iv === 3 || iv === 4 ? "third" : iv === 7 ? "fifth" : "other") : "") +
+          (scRole ? " sc sc-" + scRole + (SC.common && SC.common.has(pc) ? " sc-common" : "") : "") +
           (sel[si] === f && tRoot !== null ? " role-" + roleOf((pitch(si, f) - tRoot + 12) % 12) : "");
-        b.textContent = muted ? "✕" : inScale ? (SC.degrees ? DEGREES[iv] : SC.sp[pc]) : names()[pc];
+        b.textContent = muted ? "✕" : scRole ? (SC.degrees ? DEGREES[iv] : SC.sp[pc]) : names()[pc];
         b.title = noteName(pitch(si, f));
         b.onclick = () => {
           if (f === 0) sel[si] = sel[si] === 0 ? "x" : 0;
@@ -1728,27 +1745,116 @@ fv("tabBanjo").onclick = () => setInstrument("banjo");
 fv("tabGuitar").onclick = () => setInstrument("guitar");
 applyInstrumentUI();
 // ---- Scale overlay: light up every fret that belongs to a key or scale ----
+function parseProgression(text) {
+  const SUF = { "": "Major", m: "Minor", min: "Minor", "7": "7", maj7: "Major 7", M7: "Major 7", m7: "Minor 7", sus2: "Sus2", sus4: "Sus4", sus: "Sus4",
+    dim: "Diminished", dim7: "Diminished 7", aug: "Augmented", add9: "Add9", "6": "6", m6: "Minor 6", "5": "Power (5)", "9": "9", maj9: "Major 9", m9: "Minor 9" };
+  const BASE = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 };
+  const chords = [], bad = [];
+  const toks = text.replace(/♯/g, "#").replace(/♭/g, "b").replace(/→|->|[–—,|;]/g, " ").replace(/(?<=[A-Za-z0-9#])-(?=[A-Ga-g])/g, " ").split(/\s+/).filter(t => t && t !== "-");
+  for (const tok of toks) {
+    const m = /^([A-Ga-g])([#b]?)(.*)$/.exec(tok);
+    const sufKey = m ? (m[3] in SUF ? m[3] : m[3].toLowerCase()) : null;
+    if (!m || !(sufKey in SUF)) { bad.push(tok); continue; }
+    const letter = m[1].toUpperCase(), root = (BASE[letter] + (m[2] === "#" ? 1 : m[2] === "b" ? -1 : 0) + 12) % 12;
+    const ivs = QUALITIES.find(q => q[0] === SUF[sufKey])[1];
+    chords.push({ root, qname: SUF[sufKey], ivs, tones: ivs.map(i => (root + i) % 12),
+      cls: ivs.includes(4) ? "M" : ivs.includes(3) ? "m" : null,
+      label: letter + (m[2] === "#" ? "♯" : m[2] === "b" ? "♭" : "") + sufKey });
+  }
+  return { chords, bad };
+}
+
+function syncScaleView(chords) {
+  const view = fv("scaleView"), sig = chords.map(c => c.label).join("|");
+  fv("scaleViewWrap").hidden = !chords.length;
+  if (view.dataset.sig === sig) return;
+  const keep = view.value;
+  view.innerHTML = `<option value="key">Whole key</option>` + chords.map((c, i) => `<option value="c${i}">Over ${c.label}</option>`).join("") +
+    (chords.length > 1 ? `<option value="common">Notes shared by every chord</option>` : "");
+  view.dataset.sig = sig;
+  view.value = [...view.options].some(o => o.value === keep) ? keep : "key";
+}
+
 function scaleConfig() {
+  const { chords, bad } = parseProgression(fv("scaleProg").value);
+  syncScaleView(chords);
   if (!fv("scaleOn").checked) return null;
   const modeId = fv("scaleMode").value, tonic = +fv("scaleRoot").value, m = MODES[modeId];
-  return { tonic, m, modeId, sp: viewKey(modeId, tonic).sp, degrees: fv("scaleDeg").checked,
+  const cfg = { tonic, m, modeId, sp: viewKey(modeId, tonic).sp, degrees: fv("scaleDeg").checked, chords, bad, view: null, common: null,
     set: new Set(fv("scaleNotes").value === "pent" ? m.pent : fv("scaleNotes").value === "root" ? [0] : m.scale) };
+  if (chords.length > 1) {
+    const shared = chords[0].tones.filter(p => chords.every(c => c.tones.includes(p)));
+    if (shared.length) cfg.common = new Set(shared);
+  }
+  const v = fv("scaleView").value;
+  if (v.startsWith("c") && chords[+v.slice(1)]) {
+    const c = chords[+v.slice(1)];
+    cfg.view = { chord: c, role: pc => { const i = (pc - c.root + 12) % 12;
+      return !c.tones.includes(pc) ? null : i === 0 ? "root" : i === 3 || i === 4 ? "third" : i === 7 ? "fifth" : "extra"; } };
+  } else if (v === "common" && cfg.common) cfg.view = { shared: true, role: pc => cfg.common.has(pc) ? "root" : null };
+  return cfg;
 }
+
+// Which colour a note gets on the fretboard, or null when it isn't lit.
+function scaleRole(SC, pc) {
+  const iv = (pc - SC.tonic + 12) % 12, inScale = SC.set.has(iv);
+  if (SC.view) return SC.view.role(pc) || (inScale ? "other" : null);
+  return !inScale ? null : iv === 0 ? "root" : iv === 3 || iv === 4 ? "third" : iv === 7 ? "fifth" : "other";
+}
+
 function renderScaleLegend(SC) {
   const box = fv("scaleLegend");
   box.hidden = !SC;
   if (!SC) return;
   const key = viewKey(SC.modeId, SC.tonic);
-  const cls = iv => iv === 0 ? "root" : iv === 3 || iv === 4 ? "third" : iv === 7 ? "fifth" : "other";
+  const sw = (cls, text) => `<span class="sl sl-${cls}">${text}</span>`;
   const offs = [...SC.set].sort((a, b) => a - b);
-  box.innerHTML = `<b>${key.label}</b> ${{ pent: "(easy notes)", root: "(home note only)" }[fv("scaleNotes").value] || ""}: ` +
-    offs.map(o => `<span class="sl sl-${cls(o)}">${SC.degrees ? DEGREES[o] : key.sp[(SC.tonic + o) % 12]}</span>`).join("") +
-    `<span class="muted"> Lit frets belong to the scale. Orange is the home note, blue the third, green the fifth.</span>`;
+  const cls = iv => iv === 0 ? "root" : iv === 3 || iv === 4 ? "third" : iv === 7 ? "fifth" : "other";
+  const notesLabel = { pent: "(easy notes)", root: "(home note only)" }[fv("scaleNotes").value] || "";
+  let h = `<div class="sl-row"><b>${key.label}</b> ${notesLabel}: ` +
+    offs.map(o => sw(cls(o), SC.degrees ? DEGREES[o] : key.sp[(SC.tonic + o) % 12])).join("") + `</div>`;
+  h += `<div class="sl-row muted">` + (SC.view && SC.view.chord
+    ? `Showing ${SC.view.chord.label}: ${sw("root", "chord root")}${sw("third", "third")}${sw("fifth", "fifth")}${SC.view.chord.ivs.some(i => ![0, 3, 4, 7].includes(i)) ? sw("extra", "extra chord note") : ""}${sw("other", "other notes in the key")}`
+    : SC.view ? `Showing notes shared by every chord: ${sw("root", "shared")}${sw("other", "other notes in the key")}`
+    : `${sw("root", "home note")}${sw("third", "third")}${sw("fifth", "fifth")}${sw("other", "other notes in the scale")}`) +
+    (SC.common ? ` A gold ring marks a note that is in every chord of your progression.` : "") + `</div>`;
+
+  if (SC.bad.length) h += `<div class="sl-row warn">I couldn't read: ${SC.bad.join(", ")}. Try names like G, Em, D7, Csus4.</div>`;
+  if (SC.chords.length) {
+    const spell = c => c.tones.map(p => key.sp[p]).join(" ");
+    const fits = SC.chords.map(c => ({ c, k: key.chords.find(k => k.pc === c.root && (c.cls === null || clsClass(k.cls) === clsClass(c.cls))) }));
+    const outside = fits.filter(f => !f.k).map(f => f.c.label);
+    const ranked = rankKeys(SC.chords.map(c => ({ root: c.root, cls: c.cls })));
+    const best = ranked.length ? ranked[0].key : null;
+    const bestDiffers = best && !(best.tonic === SC.tonic && best.mode === SC.modeId);
+    const vChord = fits.find(f => f.k && /^V$/.test(f.k.roman) && (SC.modeId === "major" || SC.modeId === "minor"));
+    h += `<div class="sl-help"><h4>Your progression: ${SC.chords.map(c => c.label).join(" → ")}</h4>`;
+    h += `<p>${fits.map(f => `<b>${f.c.label}</b> is ${f.k ? `the <b>${f.k.roman}</b> chord of ${key.label}` : `not in ${key.label}`}`).join(", ")}.` +
+      (outside.length ? ` ${outside.join(" and ")} ${outside.length > 1 ? "are" : "is"} outside this key, so notes from the scale may clash over ${outside.length > 1 ? "them" : "it"}.` : ` Every chord belongs to this key, so every note of the scale is safe to play over it.`) + `</p>`;
+    if (bestDiffers) h += `<p>This progression fits best in <b>${best.label}</b>. <button class="try" data-usekey="${best.tonic}:${best.mode}">▶ Use ${best.label}</button></p>`;
+    h += `<p><b>What to play</b></p><ul>`;
+    h += `<li><b>Safe notes</b> over the whole progression: ${SC.m.pent.map(o => `<b>${key.sp[(SC.tonic + o) % 12]}</b>`).join(" ")} (the easy notes).</li>`;
+    h += `<li><b>Aim for chord tones</b> when the chord changes: ${SC.chords.map(c => `over <b>${c.label}</b> land on ${spell(c)}`).join("; ")}. Use the “Show” menu above to see one chord at a time.</li>`;
+    if (SC.common) h += `<li><b>${[...SC.common].map(p => key.sp[p]).join(" and ")}</b> ${SC.common.size > 1 ? "belong" : "belongs"} to every chord (gold ring). ${SC.common.size > 1 ? "They are" : "It is"} the safest ${SC.common.size > 1 ? "notes" : "note"} to hold through the change.</li>`;
+    if (vChord) h += `<li>The third of ${vChord.c.label} is <b>${key.sp[(vChord.c.root + 4) % 12]}</b>. It is the “leading note”: it wants to move up to <b>${key.sp[SC.tonic]}</b>, so ending a phrase on it before the home chord sounds like a question being answered.</li>`;
+    h += `<li>The <b>other notes</b> (soft purple) work as passing notes: step through them quickly on your way to a chord tone, and don't rest on them.</li>`;
+    h += `</ul></div>`;
+  }
+  box.innerHTML = h;
+  box.querySelectorAll("[data-usekey]").forEach(el => el.onclick = () => {
+    const [t, mode] = el.dataset.usekey.split(":");
+    fv("scaleRoot").value = t; fv("scaleMode").value = mode; render();
+  });
 }
 fv("scaleMode").innerHTML = Object.entries(MODES).map(([id, m]) => `<option value="${id}">${m.label}</option>`).join("");
 fv("scaleMode").value = "major";
 fv("scaleOn").onchange = () => { fv("scaleCtl").hidden = !fv("scaleOn").checked; render(); };
-["scaleRoot", "scaleMode", "scaleNotes", "scaleDeg"].forEach(id => fv(id).onchange = render);
+["scaleRoot", "scaleMode", "scaleNotes", "scaleDeg", "scaleView"].forEach(id => fv(id).onchange = render);
+fv("scaleProg").oninput = render;
+fv("scaleProgFrom").onclick = () => {
+  fv("scaleProg").value = prog.slots.map(x => names()[x.root] + (x.cls === "m" ? "m" : "")).join(" ");
+  render();
+};
 fv("scaleMatch").onclick = () => {
   const tonic = helper.key !== null ? helper.key : helper.root;
   const mode = helper.key !== null ? helper.mode : (helper.cls === "m" ? "minor" : "major");
@@ -1772,6 +1878,7 @@ function resetOptions(onlyFinder) {
   fv("tutor").checked = false;
   fv("scaleOn").checked = false; fv("scaleCtl").hidden = true;
   fv("scaleRoot").value = "0"; fv("scaleMode").value = "major"; fv("scaleNotes").value = "full"; fv("scaleDeg").checked = false;
+  fv("scaleProg").value = "";
   capoChanged();      // applies the capo and refreshes everything
 }
 fv("fReset").onclick = () => resetOptions(true);
