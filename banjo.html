@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Double C Banjo &amp; DADGAD Guitar Chord Finder and Fretboard | Justin Does Stuff</title>
 <meta name="description" content="Free interactive fretboard and chord finder for Double C banjo (gCGCD) and DADGAD guitar. Find chord shapes, see scales and modes, use a capo, and build chord progressions, with a built-in music theory tutorial.">
-<meta name="keywords" content="Double C banjo chords, DADGAD chords, DADGAD guitar, Double C tuning, gCGCD, banjo chord finder, DADGAD chord chart, learn DADGAD, open tuning chords">
+<meta name="keywords" content="Double C banjo chords, DADGAD chords, DADGAD guitar, Double C tuning, gCGCD, banjo chord finder, DADGAD chord chart, learn DADGAD, open tuning chords, Open D tuning, DADF#AD">
 <link rel="canonical" href="https://justindoesstuff.com/banjo.html">
 <meta name="robots" content="index, follow, max-image-preview:large">
 <meta name="theme-color" content="#3b1f0e">
@@ -356,6 +356,7 @@
       <label title="Open strings and every shape move up to this fret">Capo
         <select id="capo"><option value="0">none</option><option value="1">fret 1</option><option value="2">fret 2</option><option value="3">fret 3</option><option value="4">fret 4</option><option value="5">fret 5</option><option value="6">fret 6</option><option value="7">fret 7</option><option value="8">fret 8</option><option value="9">fret 9</option><option value="10">fret 10</option><option value="11">fret 11</option><option value="12">fret 12</option></select></label>
       <label title="Retune the 5th (short) string up by the same number of semitones as the capo"><input type="checkbox" id="capo5" checked disabled> Raise 5th string with capo</label>
+      <label id="openDLabel" style="display:none" title="Lower the 3rd string a half step: D A D F♯ A D"><input type="checkbox" id="openD"> Open D tuning (D A D F♯ A D)</label>
       <label><input type="checkbox" id="tutor"> Tutorial mode</label>
       <label title="Light up every fret that fits a key or scale"><input type="checkbox" id="scaleOn"> Show a scale</label>
       <span id="scaleCtl" class="scalectl" hidden>
@@ -461,9 +462,9 @@
 
 <section class="card about" style="margin-top:12px" aria-labelledby="aboutH">
   <h2 id="aboutH">About this fretboard and chord helper</h2>
-  <p>This free tool helps you learn chords on <b>Double C banjo</b> (gCGCD) and <b>DADGAD guitar</b>. Press frets on the fretboard to see the chord name and its notes, or pick a chord and get a list of shapes that work on your tuning. It also shows scales and modes on the neck, handles a capo, suggests chords that go with the one you're playing, and has a step-by-step tutorial on why chords are built the way they are.</p>
+  <p>This free tool helps you learn chords on <b>Double C banjo</b> (gCGCD) and <b>DADGAD guitar</b> (with an Open D option). Press frets on the fretboard to see the chord name and its notes, or pick a chord and get a list of shapes that work on your tuning. It also shows scales and modes on the neck, handles a capo, suggests chords that go with the one you're playing, and has a step-by-step tutorial on why chords are built the way they are.</p>
   <p><b>Double C tuning</b> tunes the five banjo strings to g C G C D, so the open strings already sound like a C sus2 chord. It's popular for old-time and clawhammer playing, and the keys of C, G and F fit it well.</p>
-  <p><b>DADGAD tuning</b> tunes the six guitar strings to D A D G A D, so the open strings sound like a Dsus4 chord. It's popular for Celtic, folk and fingerstyle playing, and the keys of D, G and A fit it well.</p>
+  <p><b>DADGAD tuning</b> tunes the six guitar strings to D A D G A D, so the open strings sound like a Dsus4 chord. It's popular for Celtic, folk and fingerstyle playing, and the keys of D, G and A fit it well. Tick <b>Open D tuning</b> on the guitar tab to lower the 3rd string a half step to F♯ (D A D F♯ A D), so the open strings sound like a D major chord. That tuning is popular for slide guitar and blues.</p>
   <p class="muted">Switch between the Banjo and Guitar tabs at the top. Made by <a href="index.html" style="color: var(--accent)">Justin Does Stuff</a>.</p>
 </section>
 
@@ -481,7 +482,9 @@ const INSTRUMENTS = {
       { name: "5th", midi: 67, start: 5, short: true },  // G4, drone
     ] },
   guitar: { title: "Guitar – DADGAD tuning", doc: "DADGAD Guitar Chord Finder and Fretboard | Justin Does Stuff", banjo: false, progKey: "guitarProg", styleName: "Open-string style",
-    tip: "<b>DADGAD tip:</b> the open strings are D, A, D, G, A, D, which already sound like a Dsus4 chord, so the keys of D, G and A work especially well on this tuning.",
+    get tip() { return openD
+      ? "<b>Open D tip:</b> the open strings are D, A, D, F♯, A, D, which spell a D major chord, so barring all six strings at any fret gives a major chord, and the keys of D, G and A work especially well on this tuning."
+      : "<b>DADGAD tip:</b> the open strings are D, A, D, G, A, D, which already sound like a Dsus4 chord, so the keys of D, G and A work especially well on this tuning."; },
     strings: [
       { name: "1st", midi: 62, start: 0 },  // D4
       { name: "2nd", midi: 57, start: 0 },  // A3
@@ -493,8 +496,12 @@ const INSTRUMENTS = {
 };
 let instId = "banjo";
 try { if (location.hash === "#guitar" || (location.hash !== "#banjo" && localStorage.getItem("instrument") === "guitar")) instId = "guitar"; } catch (e) {}
+let openD = false;      // guitar only: Open D (D A D F♯ A D) instead of DADGAD
+try { openD = localStorage.getItem("openD") === "1"; } catch (e) {}
 const INSTR = () => INSTRUMENTS[instId];
-const STRINGS = INSTRUMENTS[instId].strings.map(x => ({ ...x }));
+// Open D is DADGAD with the 3rd string lowered a half step (G to F♯).
+const tuningStrings = id => { const list = INSTRUMENTS[id].strings.map(x => ({ ...x })); if (id === "guitar" && openD) list[2].midi = 54; return list; };
+const STRINGS = tuningStrings(instId);
 const FRETS = 22;
 const MARKS = [3, 5, 7, 10, 12, 15, 17, 19, 22];
 const SHARP = ["C","C♯","D","D♯","E","F","F♯","G","G♯","A","A♯","B"];
@@ -1482,7 +1489,7 @@ function lessonBasics() {
     lstep("1. Twelve notes, one fret apart", `<p>Music has only <b>12 different notes</b>. They repeat over and over, and the distance from one to the next is a <b>semitone</b>, which is exactly one fret.</p>
       <div class="ruler">${cycle}</div>
       <p>After the 12th note you land on the first again, only higher. That is an <b>octave</b>. Most notes have a sharp (♯) in between, but <b>E to F</b> and <b>B to C</b> have nothing between them, which is why only 7 of the 12 gaps are “whole steps”.</p>`) +
-    lstep(`2. Your open strings (${I.banjo ? "banjo, Double C" : "guitar, DADGAD"})`, `<table><tr><th>String</th><th>Open note</th><th>Compared to the next string</th></tr>${openRows}</table>
+    lstep(`2. Your open strings (${I.banjo ? "banjo, Double C" : openD ? "guitar, Open D" : "guitar, DADGAD"})`, `<table><tr><th>String</th><th>Open note</th><th>Compared to the next string</th></tr>${openRows}</table>
       <p>Each string is a different starting note. Press a fret and that string's note goes up by one semitone per fret.</p>`) +
     lstep("3. One fret is one semitone", `<p>On the 1st string, starting from open and moving up fret by fret you get:</p><p>${ladder}</p>
       <p>Notice that fret 12 gives the same note as open. That's the octave: the neck repeats itself every 12 frets, which is also why the fret markers have a double dot at 12.</p>`) +
@@ -1567,6 +1574,13 @@ function lessonTuning() {
       <p>${tryBtn("Show the open strings", "open")}</p>`) +
     lstep("3. The short drone string", `<p>The 5th string is shorter and begins at the 5th fret, so it only gives one high G (the drone) that rings under the melody. Most chords just leave it open. With a capo, you can raise it with the capo or leave it alone: see the capo options at the top.</p>`) +
     lstep("4. Keys that suit it", `<p>Open C and G strings fit the keys of <b>C, G and F</b> best. Use the capo to move those shapes to other keys.</p>`);
+  if (openD) return `<p>A tuning decides which chords are easy. A different tuning means different shapes for the same chords.</p>` +
+    lstep("1. How Open D is tuned", `<p>Open D is D A D F♯ A D. It is DADGAD with one string moved: the <b>3rd</b> goes down a half step from G to F♯. Compared with standard tuning (E A D G B E), the <b>6th</b> and <b>1st</b> go from E to D, the <b>2nd</b> from B to A, and the <b>3rd</b> from G to F♯.</p>${common}`) +
+    lstep("2. Why it is called “open”", `<p>The open strings spell D, F♯ and A: a <b>D major chord</b>. Strum without pressing anything and you already have a full major chord.</p>
+      <p>Lay one finger flat across all six strings (a barre) at any fret and you get a major chord: fret 5 is <b>G</b>, fret 7 is <b>A</b>, fret 2 is <b>E</b>. That's why Open D is so popular for slide guitar and blues.</p>
+      <p>${tryBtn("Show the open strings", "open")}</p>`) +
+    lstep("3. Making it minor", `<p>The 3rd string is the F♯ that makes the chord major. For a minor chord, mute the 3rd string and play an F instead: fret 3 on the 1st, 4th or 6th string is <b>F</b>.</p>`) +
+    lstep("4. Keys that suit it", `<p>Open D, A and F♯ strings fit the keys of <b>D, G and A</b> best, using barres at the 5th and 7th frets. Use the capo to move those shapes to other keys.</p>`);
   return `<p>A tuning decides which chords are easy. A different tuning means different shapes for the same chords.</p>` +
     lstep("1. How DADGAD is tuned", `<p>Standard guitar tuning is E A D G B E. DADGAD lowers three strings by a whole step: the <b>6th</b> and <b>1st</b> go from E to D, and the <b>2nd</b> from B to A. The result is D A D G A D.</p>${common}`) +
     lstep("2. Why it sounds so open", `<p>The open strings spell D, G and A: a <b>Dsus4</b> chord. There is no third (no F♯ or F), so the open strings sound neither major nor minor. That open, modal quality is why DADGAD is popular for Celtic and folk music.</p>
@@ -1715,10 +1729,17 @@ function capoChanged() {
 }
 document.getElementById("capo").onchange = capoChanged;
 document.getElementById("capo5").onchange = capoChanged;
+function updateTitles() {
+  const I = INSTR(), od = !I.banjo && openD;
+  fv("appTitle").textContent = od ? "Guitar – Open D tuning (DADF♯AD)" : I.title;
+  document.title = od ? "Open D Guitar Chord Finder and Fretboard | Justin Does Stuff" : I.doc;
+  fv("tabGuitar").querySelector("small").textContent = openD ? "Open D" : "DADGAD";
+}
 function applyInstrumentUI() {
   const I = INSTR();
-  fv("appTitle").textContent = I.title;
-  document.title = I.doc;
+  updateTitles();
+  fv("openD").checked = openD;
+  fv("openDLabel").style.display = I.banjo ? "none" : "";
   for (const [id, tab] of [["banjo", "tabBanjo"], ["guitar", "tabGuitar"]]) {
     fv(tab).classList.toggle("on", instId === id);
     fv(tab).setAttribute("aria-selected", instId === id ? "true" : "false");
@@ -1731,7 +1752,7 @@ function setInstrument(id) {
   if (id === instId) return;
   instId = id;
   STRINGS.length = 0;
-  STRINGS.push(...INSTRUMENTS[id].strings.map(x => ({ ...x })));
+  STRINGS.push(...tuningStrings(id));
   sel.length = 0;
   sel.push(...STRINGS.map(() => 0));
   lastPlayed = null;
@@ -1743,6 +1764,16 @@ function setInstrument(id) {
 }
 fv("tabBanjo").onclick = () => setInstrument("banjo");
 fv("tabGuitar").onclick = () => setInstrument("guitar");
+function openDChanged() {
+  openD = fv("openD").checked;
+  try { localStorage.setItem("openD", openD ? "1" : "0"); } catch (e) {}
+  if (instId !== "guitar") return;
+  STRINGS[2].midi = openD ? 54 : 55;
+  lastPlayed = null;
+  updateTitles();
+  pickChord(false);
+}
+fv("openD").onchange = openDChanged;
 applyInstrumentUI();
 // ---- Scale overlay: light up every fret that belongs to a key or scale ----
 function parseProgression(text) {
@@ -1874,6 +1905,7 @@ function resetOptions(onlyFinder) {
   applyFilterDefaults();
   if (onlyFinder) { pickChord(false); return; }
   flats = false; fv("flats").checked = false;
+  if (openD) { fv("openD").checked = false; openDChanged(); }
   fv("capo").value = "0"; fv("capo5").checked = true;
   fv("tutor").checked = false;
   fv("scaleOn").checked = false; fv("scaleCtl").hidden = true;
